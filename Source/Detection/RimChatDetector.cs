@@ -11,11 +11,20 @@ namespace RimMind.Bridge.RimChat.Detection
         private static int _cacheTick = -1;
         private const int CacheIntervalTicks = 6000;
 
+        private static int SafeTicksGame
+        {
+            get
+            {
+                try { return Find.TickManager?.TicksGame ?? 0; }
+                catch { return 0; }
+            }
+        }
+
         public static bool IsRimChatActive
         {
             get
             {
-                int now = Find.TickManager?.TicksGame ?? 0;
+                int now = SafeTicksGame;
                 if (_cachedResult == null || now - _cacheTick > CacheIntervalTicks)
                 {
                     _cachedResult = ModsConfig.IsActive(RimChatPackageId);

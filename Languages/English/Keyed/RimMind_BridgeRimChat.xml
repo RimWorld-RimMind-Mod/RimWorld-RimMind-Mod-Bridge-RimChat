@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <!-- RimMindBridgeRimChatMod.cs -->
+  <RimMind.BridgeRimChat.Settings.Category>RimMind - Bridge (RimChat)</RimMind.BridgeRimChat.Settings.Category>
+  <RimMind.BridgeRimChat.Settings.TabLabel>Bridge (RimChat)</RimMind.BridgeRimChat.Settings.TabLabel>
+
+  <!-- BridgeRimChatSettings.cs - Dialogue Gate -->
+  <RimMind.BridgeRimChat.Settings.Section.DialogueGate>Dialogue Gate</RimMind.BridgeRimChat.Settings.Section.DialogueGate>
+  <RimMind.BridgeRimChat.Settings.EnableDialogueGate>Enable dialogue gate</RimMind.BridgeRimChat.Settings.EnableDialogueGate>
+  <RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc>When RimChat is present, skip RimMind-Dialogue's player dialogue entry to avoid duplicate chat interfaces</RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue>Skip player dialogue</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue>
+  <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>When RimChat is present, skip RimMind's player dialogue triggers and remove the "Chat with X" float menu option</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>
+  <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>Keep RimMind player dialogue</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>
+  <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc>Keep RimMind's player dialogue triggers and float menu option even when skipping, allowing both chat systems to coexist</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc>
+
+  <!-- BridgeRimChatSettings.cs - Action Gate -->
+  <RimMind.BridgeRimChat.Settings.Section.ActionGate>Action Gate</RimMind.BridgeRimChat.Settings.Section.ActionGate>
+  <RimMind.BridgeRimChat.Settings.EnableActionGate>Enable action gate</RimMind.BridgeRimChat.Settings.EnableActionGate>
+  <RimMind.BridgeRimChat.Settings.EnableActionGate.Desc>When RimChat is present, skip RimMind-Actions and Storyteller incidents that overlap with RimChat's capabilities to avoid duplicate execution</RimMind.BridgeRimChat.Settings.EnableActionGate.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipDiplomacyActions>Skip diplomacy actions</RimMind.BridgeRimChat.Settings.SkipDiplomacyActions>
+  <RimMind.BridgeRimChat.Settings.SkipDiplomacyActions.Desc>Skip adjust_faction and trigger_incident actions, handled by RimChat's diplomacy system</RimMind.BridgeRimChat.Settings.SkipDiplomacyActions.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipTriggerIncident>Skip Storyteller incident</RimMind.BridgeRimChat.Settings.SkipTriggerIncident>
+  <RimMind.BridgeRimChat.Settings.SkipTriggerIncident.Desc>Skip RimMind-Storyteller incident triggers to avoid duplicate event firing with RimChat</RimMind.BridgeRimChat.Settings.SkipTriggerIncident.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipSocialActions>Skip social actions</RimMind.BridgeRimChat.Settings.SkipSocialActions>
+  <RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc>Skip romance_accept and romance_breakup actions</RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipRecruitAgree>Skip recruit action</RimMind.BridgeRimChat.Settings.SkipRecruitAgree>
+  <RimMind.BridgeRimChat.Settings.SkipRecruitAgree.Desc>Skip recruit_agree action, let RimChat handle recruitment decisions</RimMind.BridgeRimChat.Settings.SkipRecruitAgree.Desc>
+  <RimMind.BridgeRimChat.Settings.IncidentCooldown>Incident cooldown: {0} game days</RimMind.BridgeRimChat.Settings.IncidentCooldown>
+  <RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc>Minimum cooldown between two Storyteller incident triggers, preventing repeated events in a short time.</RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc>
+  <RimMind.BridgeRimChat.Settings.ForceRimMindActions>Force RimMind to execute all actions</RimMind.BridgeRimChat.Settings.ForceRimMindActions>
+  <RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc>Ignore mutual exclusion rules, RimMind-Actions executes all actions regardless of RimChat status (does not affect Storyteller incidents)</RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc>
+
+  <!-- BridgeRimChatSettings.cs - Context Pull -->
+  <RimMind.BridgeRimChat.Settings.Section.ContextPull>Context Pull</RimMind.BridgeRimChat.Settings.Section.ContextPull>
+  <RimMind.BridgeRimChat.Settings.EnableContextPull>Enable context pull</RimMind.BridgeRimChat.Settings.EnableContextPull>
+  <RimMind.BridgeRimChat.Settings.EnableContextPull.Desc>Pull dialogue history and other data from RimChat, registering as RimMind context providers so RimMind can perceive RimChat's conversations</RimMind.BridgeRimChat.Settings.EnableContextPull.Desc>
+  <RimMind.BridgeRimChat.Settings.PullDiplomacyHistory>Pull diplomacy dialogue history</RimMind.BridgeRimChat.Settings.PullDiplomacyHistory>
+  <RimMind.BridgeRimChat.Settings.PullDiplomacyHistory.Desc>Register RimChat's diplomacy dialogue history as RimMind's static context provider</RimMind.BridgeRimChat.Settings.PullDiplomacyHistory.Desc>
+  <RimMind.BridgeRimChat.Settings.PullRpgHistory>Pull RPG dialogue history</RimMind.BridgeRimChat.Settings.PullRpgHistory>
+  <RimMind.BridgeRimChat.Settings.PullRpgHistory.Desc>Register RimChat's RPG dialogue history as RimMind's pawn context provider</RimMind.BridgeRimChat.Settings.PullRpgHistory.Desc>
+</LanguageData>

@@ -33,13 +33,13 @@ namespace RimMind.Bridge.RimChat
             ActionGate.Register();
             Log.Message("[RimMind-Bridge-RimChat] ActionGate registered.");
 
-            ContextExposureBridge.Register();
-            Log.Message("[RimMind-Bridge-RimChat] ContextExposure registered.");
+            ContextPullBridge.Register();
+            Log.Message("[RimMind-Bridge-RimChat] ContextPull registered.");
 
             Log.Message("[RimMind-Bridge-RimChat] Initialized.");
         }
 
-        public override string SettingsCategory() => "RimMind - Bridge (RimChat)";
+        public override string SettingsCategory() => "RimMind.BridgeRimChat.Settings.Category".Translate();
 
         public override void DoSettingsWindowContents(UnityEngine.Rect rect)
         {

@@ -18,11 +18,9 @@ namespace RimMind.Bridge.RimChat.Settings
         public int incidentCooldownTicks = 60000;
         public bool forceRimMindActions = false;
 
-        public bool enableContextExposure = true;
-        public bool exposePersonality = true;
-        public bool exposeMemory = true;
-        public bool exposeStoryteller = false;
-        public bool exposeAdvisorLog = false;
+        public bool enableContextPull = true;
+        public bool pullDiplomacyHistory = true;
+        public bool pullRpgHistory = false;
 
         private static BridgeRimChatSettings? _instance;
         public static BridgeRimChatSettings Get() => _instance ?? new BridgeRimChatSettings();
@@ -47,11 +45,9 @@ namespace RimMind.Bridge.RimChat.Settings
             Scribe_Values.Look(ref incidentCooldownTicks, "incidentCooldownTicks", 60000);
             Scribe_Values.Look(ref forceRimMindActions, "forceRimMindActions", false);
 
-            Scribe_Values.Look(ref enableContextExposure, "enableContextExposure", true);
-            Scribe_Values.Look(ref exposePersonality, "exposePersonality", true);
-            Scribe_Values.Look(ref exposeMemory, "exposeMemory", true);
-            Scribe_Values.Look(ref exposeStoryteller, "exposeStoryteller", false);
-            Scribe_Values.Look(ref exposeAdvisorLog, "exposeAdvisorLog", false);
+            Scribe_Values.Look(ref enableContextPull, "enableContextPull", true);
+            Scribe_Values.Look(ref pullDiplomacyHistory, "pullDiplomacyHistory", true);
+            Scribe_Values.Look(ref pullRpgHistory, "pullRpgHistory", false);
         }
 
         private static Vector2 _scrollPos = Vector2.zero;
@@ -76,12 +72,12 @@ namespace RimMind.Bridge.RimChat.Settings
                 "RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc".Translate());
             if (s.enableDialogueGate)
             {
-                listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.SkipPlayerDialogue".Translate(),
+                listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.SkipPlayerDialogue".Translate(),
                     ref s.skipPlayerDialogue,
                     "RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc".Translate());
                 if (s.skipPlayerDialogue)
                 {
-                    listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue".Translate(),
+                    listing.CheckboxLabeled("    " + "RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue".Translate(),
                         ref s.forceRimMindPlayerDialogue,
                         "RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc".Translate());
                 }
@@ -100,12 +96,17 @@ namespace RimMind.Bridge.RimChat.Settings
                     ref s.skipTriggerIncident,
                     "RimMind.BridgeRimChat.Settings.SkipTriggerIncident.Desc".Translate());
                 listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.SkipSocialActions".Translate(),
-                    ref s.skipSocialActions);
+                    ref s.skipSocialActions,
+                    "RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc".Translate());
                 listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.SkipRecruitAgree".Translate(),
-                    ref s.skipRecruitAgree);
+                    ref s.skipRecruitAgree,
+                    "RimMind.BridgeRimChat.Settings.SkipRecruitAgree.Desc".Translate());
                 if (s.skipTriggerIncident)
                 {
                     listing.Label("  " + "RimMind.BridgeRimChat.Settings.IncidentCooldown".Translate($"{s.incidentCooldownTicks / 60000f:F1}"));
+                    GUI.color = Color.gray;
+                    listing.Label("    " + "RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc".Translate());
+                    GUI.color = Color.white;
                     s.incidentCooldownTicks = (int)listing.Slider(s.incidentCooldownTicks, 6000f, 180000f);
                     s.incidentCooldownTicks = (s.incidentCooldownTicks / 1500) * 1500;
                 }
@@ -114,20 +115,18 @@ namespace RimMind.Bridge.RimChat.Settings
                     "RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc".Translate());
             }
 
-            SettingsUIHelper.DrawSectionHeader(listing, "RimMind.BridgeRimChat.Settings.Section.ContextExposure".Translate());
-            listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.EnableContextExposure".Translate(),
-                ref s.enableContextExposure,
-                "RimMind.BridgeRimChat.Settings.EnableContextExposure.Desc".Translate());
-            if (s.enableContextExposure)
+            SettingsUIHelper.DrawSectionHeader(listing, "RimMind.BridgeRimChat.Settings.Section.ContextPull".Translate());
+            listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.EnableContextPull".Translate(),
+                ref s.enableContextPull,
+                "RimMind.BridgeRimChat.Settings.EnableContextPull.Desc".Translate());
+            if (s.enableContextPull)
             {
-                listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.ExposePersonality".Translate(),
-                    ref s.exposePersonality);
-                listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.ExposeMemory".Translate(),
-                    ref s.exposeMemory);
-                listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.ExposeStoryteller".Translate(),
-                    ref s.exposeStoryteller);
-                listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.ExposeAdvisorLog".Translate(),
-                    ref s.exposeAdvisorLog);
+                listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.PullDiplomacyHistory".Translate(),
+                    ref s.pullDiplomacyHistory,
+                    "RimMind.BridgeRimChat.Settings.PullDiplomacyHistory.Desc".Translate());
+                listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.PullRpgHistory".Translate(),
+                    ref s.pullRpgHistory,
+                    "RimMind.BridgeRimChat.Settings.PullRpgHistory.Desc".Translate());
             }
 
             listing.End();
@@ -145,11 +144,9 @@ namespace RimMind.Bridge.RimChat.Settings
                 s.skipRecruitAgree = false;
                 s.incidentCooldownTicks = 60000;
                 s.forceRimMindActions = false;
-                s.enableContextExposure = true;
-                s.exposePersonality = true;
-                s.exposeMemory = true;
-                s.exposeStoryteller = false;
-                s.exposeAdvisorLog = false;
+                s.enableContextPull = true;
+                s.pullDiplomacyHistory = true;
+                s.pullRpgHistory = false;
             });
 
             Get().Write();
@@ -163,10 +160,10 @@ namespace RimMind.Bridge.RimChat.Settings
                 h += 24f + (s.skipPlayerDialogue ? 24f : 0f);
             h += 24f + 24f;
             if (s.enableActionGate)
-                h += 24f * 5 + (s.skipTriggerIncident ? 24f + 32f : 0f) + 24f;
+                h += 24f * 4 + (s.skipTriggerIncident ? 24f + 32f : 0f) + 24f;
             h += 24f + 24f;
-            if (s.enableContextExposure)
-                h += 24f * 4;
+            if (s.enableContextPull)
+                h += 24f * 2;
             return h + 40f;
         }
     }
