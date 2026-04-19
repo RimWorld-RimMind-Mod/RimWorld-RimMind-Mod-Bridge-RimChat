@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <!-- RimMindBridgeRimChatMod.cs -->
+  <RimMind.BridgeRimChat.Settings.Category>桥接（RimChat）</RimMind.BridgeRimChat.Settings.Category>
+  <RimMind.BridgeRimChat.Settings.TabLabel>桥接（RimChat）</RimMind.BridgeRimChat.Settings.TabLabel>
+
+  <!-- BridgeRimChatSettings.cs - 对话门控 -->
+  <RimMind.BridgeRimChat.Settings.Section.DialogueGate>对话门控</RimMind.BridgeRimChat.Settings.Section.DialogueGate>
+  <RimMind.BridgeRimChat.Settings.EnableDialogueGate>启用对话门控</RimMind.BridgeRimChat.Settings.EnableDialogueGate>
+  <RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc>RimChat存在时，跳过RimMind-Dialogue的玩家对话入口，避免重复的聊天界面</RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue>跳过玩家对话</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue>
+  <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>RimChat存在时，跳过RimMind的玩家对话触发并移除"与X对话"浮动菜单选项</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>
+  <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>保留RimMind玩家对话</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>
+  <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc>即使跳过玩家对话，仍保留RimMind的对话触发和浮动菜单选项，允许两套聊天系统共存</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc>
+
+  <!-- BridgeRimChatSettings.cs - 动作门控 -->
+  <RimMind.BridgeRimChat.Settings.Section.ActionGate>动作门控</RimMind.BridgeRimChat.Settings.Section.ActionGate>
+  <RimMind.BridgeRimChat.Settings.EnableActionGate>启用动作门控</RimMind.BridgeRimChat.Settings.EnableActionGate>
+  <RimMind.BridgeRimChat.Settings.EnableActionGate.Desc>RimChat存在时，跳过与RimChat功能重叠的RimMind-Actions动作和Storyteller事件，避免重复执行</RimMind.BridgeRimChat.Settings.EnableActionGate.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipDiplomacyActions>跳过外交类动作</RimMind.BridgeRimChat.Settings.SkipDiplomacyActions>
+  <RimMind.BridgeRimChat.Settings.SkipDiplomacyActions.Desc>跳过adjust_faction和trigger_incident外交动作，由RimChat外交系统处理</RimMind.BridgeRimChat.Settings.SkipDiplomacyActions.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipTriggerIncident>跳过叙事者事件</RimMind.BridgeRimChat.Settings.SkipTriggerIncident>
+  <RimMind.BridgeRimChat.Settings.SkipTriggerIncident.Desc>跳过RimMind-Storyteller的事件触发，避免与RimChat重复触发事件</RimMind.BridgeRimChat.Settings.SkipTriggerIncident.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipSocialActions>跳过社交类动作</RimMind.BridgeRimChat.Settings.SkipSocialActions>
+  <RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc>跳过romance_accept和romance_breakup等社交动作</RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipRecruitAgree>跳过招募动作</RimMind.BridgeRimChat.Settings.SkipRecruitAgree>
+  <RimMind.BridgeRimChat.Settings.SkipRecruitAgree.Desc>跳过recruit_agree动作，由RimChat处理招募决策</RimMind.BridgeRimChat.Settings.SkipRecruitAgree.Desc>
+  <RimMind.BridgeRimChat.Settings.IncidentCooldown>事件触发冷却: {0} 游戏天</RimMind.BridgeRimChat.Settings.IncidentCooldown>
+  <RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc>两次叙事者事件触发之间的最短冷却时间，避免短时间内重复触发事件。</RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc>
+  <RimMind.BridgeRimChat.Settings.ForceRimMindActions>强制RimMind执行所有动作</RimMind.BridgeRimChat.Settings.ForceRimMindActions>
+  <RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc>忽略互斥规则，RimMind-Actions无视RimChat状态执行所有动作（不影响叙事者事件）</RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc>
+
+  <!-- BridgeRimChatSettings.cs - 上下文拉取 -->
+  <RimMind.BridgeRimChat.Settings.Section.ContextPull>上下文拉取</RimMind.BridgeRimChat.Settings.Section.ContextPull>
+  <RimMind.BridgeRimChat.Settings.EnableContextPull>启用上下文拉取</RimMind.BridgeRimChat.Settings.EnableContextPull>
+  <RimMind.BridgeRimChat.Settings.EnableContextPull.Desc>从RimChat拉取对话历史等数据，注册为RimMind的上下文Provider，使RimMind能感知RimChat的对话内容</RimMind.BridgeRimChat.Settings.EnableContextPull.Desc>
+  <RimMind.BridgeRimChat.Settings.PullDiplomacyHistory>拉取外交对话历史</RimMind.BridgeRimChat.Settings.PullDiplomacyHistory>
+  <RimMind.BridgeRimChat.Settings.PullDiplomacyHistory.Desc>将RimChat的外交对话历史注册为RimMind的静态上下文Provider</RimMind.BridgeRimChat.Settings.PullDiplomacyHistory.Desc>
+  <RimMind.BridgeRimChat.Settings.PullRpgHistory>拉取RPG对话历史</RimMind.BridgeRimChat.Settings.PullRpgHistory>
+  <RimMind.BridgeRimChat.Settings.PullRpgHistory.Desc>将RimChat的RPG对话历史注册为RimMind的Pawn上下文Provider</RimMind.BridgeRimChat.Settings.PullRpgHistory.Desc>
+</LanguageData>
