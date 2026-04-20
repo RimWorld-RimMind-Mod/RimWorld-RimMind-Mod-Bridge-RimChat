@@ -259,7 +259,7 @@ Harmony → yancy.rimchat → RimMind-Core → RimMind 子模组 → RimMind-Bri
 
 所有 UI 文本通过 `Languages/ChineseSimplified/Keyed/RimMind_BridgeRimChat.xml` 和 `Languages/English/Keyed/RimMind_BridgeRimChat.xml` 的 Keyed 翻译，禁止硬编码中文。
 
-翻译键共 22 个，覆盖 3 个设置分区（DialogueGate / ActionGate / ContextPull）+ Mod 入口。
+翻译键共 31 个，覆盖 3 个设置分区（DialogueGate / ActionGate / ContextPull）+ Mod 入口。
 
 ### 设置 UI
 
