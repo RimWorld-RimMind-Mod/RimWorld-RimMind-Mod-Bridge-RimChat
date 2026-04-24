@@ -34,10 +34,5 @@ namespace RimMind.Bridge.RimChat.Detection
             }
         }
 
-        public static void InvalidateCache()
-        {
-            _cachedResult = null;
-            _cacheTick = -1;
-        }
     }
 }

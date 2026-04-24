@@ -36,10 +36,5 @@ namespace RimMind.Bridge.RimChat.Bridge
             RimMindAPI.RegisterFloatMenuSkipCheck("rimchat_bridge", ShouldSkipFloatMenuOption);
         }
 
-        internal static void UnregisterSkipChecks()
-        {
-            RimMindAPI.UnregisterDialogueSkipCheck("rimchat_bridge");
-            RimMindAPI.UnregisterFloatMenuSkipCheck("rimchat_bridge");
-        }
     }
 }

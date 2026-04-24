@@ -30,13 +30,6 @@ namespace RimMind.Bridge.RimChat.Cooldown
             }
         }
 
-        public static int LastIncidentTick => _lastIncidentTick;
-
-        public static void Reset()
-        {
-            _lastIncidentTick = -99999;
-        }
-
         public static void ExposeData()
         {
             Scribe_Values.Look(ref _lastIncidentTick, "RimMind_BridgeRimChat_LastIncidentTick", -99999);
