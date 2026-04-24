@@ -107,8 +107,9 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }
                 return sessionCount > 0 ? sb.ToString().TrimEnd() : null;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.WarningOnce($"[RimMind-Bridge-RimChat] Diplomacy context pull failed: {ex.Message}", 87421);
                 return null;
             }
         }
@@ -212,8 +213,9 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }
                 return sessionCount > 0 ? sb.ToString().TrimEnd() : null;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.WarningOnce($"[RimMind-Bridge-RimChat] RPG context pull failed: {ex.Message}", 87422);
                 return null;
             }
         }
@@ -227,6 +229,12 @@ namespace RimMind.Bridge.RimChat.Bridge
         public static void Unregister()
         {
             RimMindAPI.UnregisterModProviders(ModId);
+        }
+
+        public static void Refresh()
+        {
+            Unregister();
+            Register();
         }
     }
 }

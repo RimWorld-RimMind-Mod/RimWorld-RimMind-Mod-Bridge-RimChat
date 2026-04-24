@@ -3,7 +3,6 @@
   <!-- RimMindBridgeRimChatMod.cs -->
   <RimMind.BridgeRimChat.Settings.Category>桥接（RimChat）</RimMind.BridgeRimChat.Settings.Category>
   <RimMind.BridgeRimChat.Settings.TabLabel>桥接（RimChat）</RimMind.BridgeRimChat.Settings.TabLabel>
-
   <!-- BridgeRimChatSettings.cs - 对话门控 -->
   <RimMind.BridgeRimChat.Settings.Section.DialogueGate>对话门控</RimMind.BridgeRimChat.Settings.Section.DialogueGate>
   <RimMind.BridgeRimChat.Settings.EnableDialogueGate>启用对话门控</RimMind.BridgeRimChat.Settings.EnableDialogueGate>
@@ -12,7 +11,6 @@
   <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>RimChat存在时，跳过RimMind的玩家对话触发并移除"与X对话"浮动菜单选项</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>
   <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>保留RimMind玩家对话</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>
   <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc>即使跳过玩家对话，仍保留RimMind的对话触发和浮动菜单选项，允许两套聊天系统共存</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc>
-
   <!-- BridgeRimChatSettings.cs - 动作门控 -->
   <RimMind.BridgeRimChat.Settings.Section.ActionGate>动作门控</RimMind.BridgeRimChat.Settings.Section.ActionGate>
   <RimMind.BridgeRimChat.Settings.EnableActionGate>启用动作门控</RimMind.BridgeRimChat.Settings.EnableActionGate>
@@ -29,7 +27,6 @@
   <RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc>两次叙事者事件触发之间的最短冷却时间，避免短时间内重复触发事件。</RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc>
   <RimMind.BridgeRimChat.Settings.ForceRimMindActions>强制RimMind执行所有动作</RimMind.BridgeRimChat.Settings.ForceRimMindActions>
   <RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc>忽略互斥规则，RimMind-Actions无视RimChat状态执行所有动作（不影响叙事者事件）</RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc>
-
   <!-- BridgeRimChatSettings.cs - 上下文拉取 -->
   <RimMind.BridgeRimChat.Settings.Section.ContextPull>上下文拉取</RimMind.BridgeRimChat.Settings.Section.ContextPull>
   <RimMind.BridgeRimChat.Settings.EnableContextPull>启用上下文拉取</RimMind.BridgeRimChat.Settings.EnableContextPull>

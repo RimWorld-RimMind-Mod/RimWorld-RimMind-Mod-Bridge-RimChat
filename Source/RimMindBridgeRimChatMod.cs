@@ -1,6 +1,4 @@
-using HarmonyLib;
 using RimMind.Bridge.RimChat.Bridge;
-using RimMind.Bridge.RimChat.Cooldown;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Core;
@@ -10,12 +8,9 @@ namespace RimMind.Bridge.RimChat
 {
     public class RimMindBridgeRimChatMod : Mod
     {
-        public static BridgeRimChatSettings Settings = null!;
-
         public RimMindBridgeRimChatMod(ModContentPack content) : base(content)
         {
-            Settings = GetSettings<BridgeRimChatSettings>();
-            new Harmony("mcocdaa.RimMindBridgeRimChat").PatchAll();
+            GetSettings<BridgeRimChatSettings>();
 
             RimMindAPI.RegisterSettingsTab("bridge_rimchat",
                 () => "RimMind.BridgeRimChat.Settings.TabLabel".Translate(),
@@ -40,10 +35,5 @@ namespace RimMind.Bridge.RimChat
         }
 
         public override string SettingsCategory() => "RimMind.BridgeRimChat.Settings.Category".Translate();
-
-        public override void DoSettingsWindowContents(UnityEngine.Rect rect)
-        {
-            BridgeRimChatSettings.DrawSettingsContent(rect);
-        }
     }
 }

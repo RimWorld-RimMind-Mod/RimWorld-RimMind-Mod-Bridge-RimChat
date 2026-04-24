@@ -3,7 +3,6 @@
   <!-- RimMindBridgeRimChatMod.cs -->
   <RimMind.BridgeRimChat.Settings.Category>RimMind - Bridge (RimChat)</RimMind.BridgeRimChat.Settings.Category>
   <RimMind.BridgeRimChat.Settings.TabLabel>Bridge (RimChat)</RimMind.BridgeRimChat.Settings.TabLabel>
-
   <!-- BridgeRimChatSettings.cs - Dialogue Gate -->
   <RimMind.BridgeRimChat.Settings.Section.DialogueGate>Dialogue Gate</RimMind.BridgeRimChat.Settings.Section.DialogueGate>
   <RimMind.BridgeRimChat.Settings.EnableDialogueGate>Enable dialogue gate</RimMind.BridgeRimChat.Settings.EnableDialogueGate>
@@ -12,7 +11,6 @@
   <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>When RimChat is present, skip RimMind's player dialogue triggers and remove the "Chat with X" float menu option</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>
   <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>Keep RimMind player dialogue</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>
   <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc>Keep RimMind's player dialogue triggers and float menu option even when skipping, allowing both chat systems to coexist</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc>
-
   <!-- BridgeRimChatSettings.cs - Action Gate -->
   <RimMind.BridgeRimChat.Settings.Section.ActionGate>Action Gate</RimMind.BridgeRimChat.Settings.Section.ActionGate>
   <RimMind.BridgeRimChat.Settings.EnableActionGate>Enable action gate</RimMind.BridgeRimChat.Settings.EnableActionGate>
@@ -29,7 +27,6 @@
   <RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc>Minimum cooldown between two Storyteller incident triggers, preventing repeated events in a short time.</RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc>
   <RimMind.BridgeRimChat.Settings.ForceRimMindActions>Force RimMind to execute all actions</RimMind.BridgeRimChat.Settings.ForceRimMindActions>
   <RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc>Ignore mutual exclusion rules, RimMind-Actions executes all actions regardless of RimChat status (does not affect Storyteller incidents)</RimMind.BridgeRimChat.Settings.ForceRimMindActions.Desc>
-
   <!-- BridgeRimChatSettings.cs - Context Pull -->
   <RimMind.BridgeRimChat.Settings.Section.ContextPull>Context Pull</RimMind.BridgeRimChat.Settings.Section.ContextPull>
   <RimMind.BridgeRimChat.Settings.EnableContextPull>Enable context pull</RimMind.BridgeRimChat.Settings.EnableContextPull>

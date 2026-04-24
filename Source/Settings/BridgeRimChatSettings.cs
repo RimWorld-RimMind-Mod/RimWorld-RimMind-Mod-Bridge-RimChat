@@ -1,6 +1,7 @@
+using RimMind.Bridge.RimChat.Bridge;
+using RimMind.Core.UI;
 using UnityEngine;
 using Verse;
-using RimMind.Core.UI;
 
 namespace RimMind.Bridge.RimChat.Settings
 {
@@ -48,6 +49,8 @@ namespace RimMind.Bridge.RimChat.Settings
             Scribe_Values.Look(ref enableContextPull, "enableContextPull", true);
             Scribe_Values.Look(ref pullDiplomacyHistory, "pullDiplomacyHistory", true);
             Scribe_Values.Look(ref pullRpgHistory, "pullRpgHistory", false);
+
+            SharedIncidentCooldown.ExposeData();
         }
 
         private static Vector2 _scrollPos = Vector2.zero;
@@ -55,6 +58,10 @@ namespace RimMind.Bridge.RimChat.Settings
         public static void DrawSettingsContent(Rect inRect)
         {
             var s = Get();
+
+            bool oldEnableContextPull = s.enableContextPull;
+            bool oldPullDiplomacy = s.pullDiplomacyHistory;
+            bool oldPullRpg = s.pullRpgHistory;
 
             Rect contentArea = SettingsUIHelper.SplitContentArea(inRect);
             Rect bottomBar = SettingsUIHelper.SplitBottomBar(inRect);
@@ -149,6 +156,13 @@ namespace RimMind.Bridge.RimChat.Settings
                 s.pullRpgHistory = false;
             });
 
+            if (s.enableContextPull != oldEnableContextPull
+                || s.pullDiplomacyHistory != oldPullDiplomacy
+                || s.pullRpgHistory != oldPullRpg)
+            {
+                ContextPullBridge.Refresh();
+            }
+
             Get().Write();
         }
 
@@ -160,7 +174,7 @@ namespace RimMind.Bridge.RimChat.Settings
                 h += 24f + (s.skipPlayerDialogue ? 24f : 0f);
             h += 24f + 24f;
             if (s.enableActionGate)
-                h += 24f * 4 + (s.skipTriggerIncident ? 24f + 32f : 0f) + 24f;
+                h += 24f * 4 + (s.skipTriggerIncident ? 24f + 24f + 32f : 0f) + 24f;
             h += 24f + 24f;
             if (s.enableContextPull)
                 h += 24f * 2;

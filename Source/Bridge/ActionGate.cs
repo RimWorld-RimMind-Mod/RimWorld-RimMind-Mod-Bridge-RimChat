@@ -62,6 +62,8 @@ namespace RimMind.Bridge.RimChat.Bridge
         internal static void Unregister()
         {
             RimMindAPI.UnregisterActionSkipCheck("rimchat_bridge");
+            RimMindAPI.UnregisterIncidentExecutedCallback(SharedIncidentCooldown.RecordIncident);
+            RimMindAPI.UnregisterStorytellerIncidentSkipCheck(ShouldSkipStorytellerIncident);
         }
     }
 }

@@ -8,12 +8,26 @@ namespace RimMind.Bridge.RimChat.Cooldown
 
         public static void RecordIncident()
         {
-            _lastIncidentTick = Find.TickManager.TicksGame;
+            try
+            {
+                _lastIncidentTick = Find.TickManager.TicksGame;
+            }
+            catch
+            {
+                _lastIncidentTick = 0;
+            }
         }
 
         public static bool IsOnCooldown(int cooldownTicks)
         {
-            return Find.TickManager.TicksGame - _lastIncidentTick < cooldownTicks;
+            try
+            {
+                return Find.TickManager.TicksGame - _lastIncidentTick < cooldownTicks;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static int LastIncidentTick => _lastIncidentTick;
@@ -21,6 +35,11 @@ namespace RimMind.Bridge.RimChat.Cooldown
         public static void Reset()
         {
             _lastIncidentTick = -99999;
+        }
+
+        public static void ExposeData()
+        {
+            Scribe_Values.Look(ref _lastIncidentTick, "RimMind_BridgeRimChat_LastIncidentTick", -99999);
         }
     }
 }
