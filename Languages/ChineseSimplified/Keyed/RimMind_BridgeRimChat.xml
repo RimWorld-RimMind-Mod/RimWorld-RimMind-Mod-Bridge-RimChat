@@ -20,7 +20,7 @@
   <RimMind.BridgeRimChat.Settings.SkipTriggerIncident>跳过叙事者事件</RimMind.BridgeRimChat.Settings.SkipTriggerIncident>
   <RimMind.BridgeRimChat.Settings.SkipTriggerIncident.Desc>跳过RimMind-Storyteller的事件触发，避免与RimChat重复触发事件</RimMind.BridgeRimChat.Settings.SkipTriggerIncident.Desc>
   <RimMind.BridgeRimChat.Settings.SkipSocialActions>跳过社交类动作</RimMind.BridgeRimChat.Settings.SkipSocialActions>
-  <RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc>跳过romance_accept和romance_breakup等社交动作</RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc>
+  <RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc>跳过romance_attempt和romance_breakup等社交动作</RimMind.BridgeRimChat.Settings.SkipSocialActions.Desc>
   <RimMind.BridgeRimChat.Settings.SkipRecruitAgree>跳过招募动作</RimMind.BridgeRimChat.Settings.SkipRecruitAgree>
   <RimMind.BridgeRimChat.Settings.SkipRecruitAgree.Desc>跳过recruit_agree动作，由RimChat处理招募决策</RimMind.BridgeRimChat.Settings.SkipRecruitAgree.Desc>
   <RimMind.BridgeRimChat.Settings.IncidentCooldown>事件触发冷却: {0} 游戏天</RimMind.BridgeRimChat.Settings.IncidentCooldown>
