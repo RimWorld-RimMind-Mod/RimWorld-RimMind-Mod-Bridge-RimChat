@@ -89,7 +89,7 @@ cd RimWorld-RimMind-Mod-Bridge-RimChat
 
 - **跳过外交类动作**：跳过 adjust_faction 和 trigger_incident 动作，由 RimChat 外交系统处理（默认开启）
 - **跳过叙事者事件**：跳过 RimMind-Storyteller 的事件触发，避免与 RimChat 重复触发事件（默认开启）
-- **跳过社交类动作**：跳过 romance_accept 和 romance_breakup 动作（默认关闭）
+- **跳过社交类动作**：跳过 romance_attempt 和 romance_breakup 动作（默认关闭）
 - **跳过招募动作**：跳过 recruit_agree 动作，由 RimChat 处理招募决策（默认关闭）
 - **事件触发冷却**：两次叙事者事件触发之间的最短冷却时间（默认 1 游戏天，范围 0.1~3.0 天）
 - **强制 RimMind 执行所有动作**：忽略互斥规则，RimMind-Actions 无视 RimChat 状态执行所有动作（不影响叙事者事件，默认关闭）
@@ -118,7 +118,7 @@ cd RimWorld-RimMind-Mod-Bridge-RimChat
 | 启用动作门控 | 开启 | RimChat 激活时跳过重叠的 RimMind 动作和叙事者事件 |
 | 跳过外交类动作 | 开启 | 跳过 adjust_faction 和 trigger_incident |
 | 跳过叙事者事件 | 开启 | 跳过 RimMind-Storyteller 事件触发 |
-| 跳过社交类动作 | 关闭 | 跳过 romance_accept 和 romance_breakup |
+| 跳过社交类动作 | 关闭 | 跳过 romance_attempt 和 romance_breakup |
 | 跳过招募动作 | 关闭 | 跳过 recruit_agree |
 | 事件触发冷却 | 1 游戏天 | 两次叙事者事件触发的最短间隔（0.1~3.0 天） |
 | 强制 RimMind 执行所有动作 | 关闭 | RimMind-Actions 忽略互斥规则执行所有动作（不影响叙事者事件） |
@@ -246,7 +246,7 @@ When RimChat is active, automatically skips RimMind-Actions that overlap with Ri
 
 - **Skip diplomacy actions**: Skip adjust_faction and trigger_incident actions, handled by RimChat's diplomacy system (default: on)
 - **Skip Storyteller incident**: Skip RimMind-Storyteller incident triggers to avoid duplicate event firing with RimChat (default: on)
-- **Skip social actions**: Skip romance_accept and romance_breakup actions (default: off)
+- **Skip social actions**: Skip romance_attempt and romance_breakup actions (default: off)
 - **Skip recruit action**: Skip recruit_agree action, let RimChat handle recruitment decisions (default: off)
 - **Incident cooldown**: Minimum cooldown between two Storyteller incident triggers (default: 1 game day, range 0.1~3.0 days)
 - **Force RimMind to execute all actions**: Ignore mutual exclusion rules, RimMind-Actions executes all actions regardless of RimChat status (does not affect Storyteller incidents, default: off)
@@ -275,7 +275,7 @@ Pulls RimChat's dialogue history and registers as RimMind context providers, ena
 | Enable action gate | On | Skip overlapping RimMind actions and Storyteller incidents when RimChat is active |
 | Skip diplomacy actions | On | Skip adjust_faction and trigger_incident |
 | Skip Storyteller incident | On | Skip RimMind-Storyteller incident triggers |
-| Skip social actions | Off | Skip romance_accept and romance_breakup |
+| Skip social actions | Off | Skip romance_attempt and romance_breakup |
 | Skip recruit action | Off | Skip recruit_agree |
 | Incident cooldown | 1 game day | Minimum interval between Storyteller incident triggers (0.1~3.0 days) |
 | Force RimMind to execute all actions | Off | RimMind-Actions ignores mutual exclusion rules (does not affect Storyteller incidents) |

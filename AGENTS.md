@@ -23,6 +23,8 @@ Source/
 │   └── ContextPullBridge.cs     上下文拉取，从 RimChat 读取对话历史注册为 RimMind Provider
 ├── Cooldown/
 │   └── SharedIncidentCooldown.cs 事件触发共享冷却，防止 RimMind-Storyteller 与 RimChat 短时间内重复触发事件
+├── Debug/
+│   └── BridgeRimChatDebugActions.cs 调试动作，显示桥接状态和测试门控逻辑
 ├── Detection/
 │   └── RimChatDetector.cs       检测 RimChat 是否激活（带缓存）
 └── Settings/
@@ -40,7 +42,6 @@ static class RimChatDetector {
     const string RimChatPackageId = "yancy.rimchat";
 
     bool IsRimChatActive  // RimChat 模组是否激活（6000 tick 缓存）
-    void InvalidateCache() // 手动刷新缓存（当前无调用者）
 }
 ```
 
@@ -51,16 +52,13 @@ static class RimChatDetector {
 ```csharp
 static class DialogueGate {
     bool ShouldSkipDialogue(Pawn pawn, string triggerType)
-    // triggerType: "PlayerInput" 时检查 skipPlayerDialogue
+    // 仅 triggerType == "PlayerInput" 时检查门控，其他类型一律放行
 
     bool ShouldSkipFloatMenuOption()
     // 判断是否跳过 RimMind 的"与X对话"浮动菜单
 
     void RegisterSkipChecks()
     // 注册到 RimMindAPI.RegisterDialogueSkipCheck / RegisterFloatMenuSkipCheck
-
-    void UnregisterSkipChecks()
-    // 清理注册（当前无调用者）
 }
 ```
 
@@ -69,6 +67,7 @@ static class DialogueGate {
 | 条件 | 跳过条件 |
 |------|---------|
 | `"PlayerInput"` 对话 | `enableDialogueGate && skipPlayerDialogue && !forceRimMindPlayerDialogue` |
+| 其他 triggerType | 一律放行（false） |
 | 浮动菜单 | `enableDialogueGate && skipPlayerDialogue && !forceRimMindPlayerDialogue` |
 
 ### ActionGate
@@ -85,9 +84,6 @@ static class ActionGate {
 
     void Register()
     // 注册到 RimMindAPI.RegisterActionSkipCheck / RegisterIncidentExecutedCallback / RegisterStorytellerIncidentSkipCheck
-
-    void Unregister()
-    // 清理注册（当前无调用者）
 }
 ```
 
@@ -96,7 +92,7 @@ static class ActionGate {
 | 分类 | 动作 ID | 设置开关 |
 |------|---------|---------|
 | 外交 | `adjust_faction`, `trigger_incident` | skipDiplomacyActions |
-| 社交 | `romance_accept`, `romance_breakup` | skipSocialActions |
+| 社交 | `romance_attempt`, `romance_breakup` | skipSocialActions |
 | 招募 | `recruit_agree` | skipRecruitAgree |
 | 叙事者事件 | Storyteller incident | skipTriggerIncident + SharedIncidentCooldown |
 
@@ -129,8 +125,7 @@ ShouldSkipStorytellerIncident:
 static class SharedIncidentCooldown {
     void RecordIncident()          // 记录事件触发时间
     bool IsOnCooldown(int cooldownTicks) // 检查是否在冷却中
-    int LastIncidentTick { get; }  // 上次事件触发 tick（当前无读取者）
-    void Reset()                   // 重置冷却（当前无调用者）
+    void ExposeData()              // 存档序列化
 }
 ```
 
@@ -168,7 +163,7 @@ class BridgeRimChatSettings : ModSettings {
     bool enableActionGate;            // 默认 true
     bool skipDiplomacyActions;        // 默认 true（跳过 adjust_faction, trigger_incident）
     bool skipTriggerIncident;         // 默认 true（跳过 Storyteller 事件触发）
-    bool skipSocialActions;           // 默认 false（跳过 romance_accept, romance_breakup）
+    bool skipSocialActions;           // 默认 false（跳过 romance_attempt, romance_breakup）
     bool skipRecruitAgree;            // 默认 false（跳过 recruit_agree）
     int incidentCooldownTicks;        // 默认 60000（1 游戏天），Slider 6000~180000，步进 1500
     bool forceRimMindActions;         // 默认 false（仅影响 RimMind-Actions，不影响 Storyteller）
@@ -214,6 +209,16 @@ RimMindBridgeRimChatMod 构造函数
     │               ContextPullBridge.Register()
 ```
 
+## 跨模组关联
+
+| 关联模组 | 关联方式 | 说明 |
+|---------|---------|------|
+| RimMind-Core | 编译期引用 | 通过 RimMindAPI 注册 SkipCheck、Provider、SettingsTab |
+| RimChat | 纯反射 | 无编译期引用，通过 AccessTools.TypeByName 反射读取内部类型 |
+| RimMind-Dialogue | 运行时委托 | DialogueGate 注册的 SkipCheck 影响 Dialogue 的触发决策 |
+| RimMind-Actions | 运行时委托 | ActionGate 注册的 ActionSkipCheck 影响 Actions 的执行决策 |
+| RimMind-Storyteller | 运行时委托 | ActionGate 注册的 IncidentSkipCheck + IncidentCallback 影响 Storyteller 的事件触发 |
+
 ## 代码约定
 
 ### 命名空间
@@ -223,12 +228,13 @@ RimMindBridgeRimChatMod 构造函数
 | `RimMind.Bridge.RimChat` | Source/ 根目录 | Mod 入口 |
 | `RimMind.Bridge.RimChat.Bridge` | Bridge/ | 桥接模块 |
 | `RimMind.Bridge.RimChat.Cooldown` | Cooldown/ | 冷却管理 |
+| `RimMind.Bridge.RimChat.Debug` | Debug/ | 调试动作 |
 | `RimMind.Bridge.RimChat.Detection` | Detection/ | RimChat 检测 |
 | `RimMind.Bridge.RimChat.Settings` | Settings/ | 设置 |
 
 ### ModId
 
-所有 RimMindAPI 注册使用统一 ModId：`"RimMind.BridgeRimChat"`
+所有 RimMindAPI 注册使用统一 ModId：`"RimMind.Bridge.RimChat"`
 
 ### 构建
 
@@ -291,3 +297,18 @@ Harmony → yancy.rimchat → RimMind-Core → RimMind 子模组 → RimMind-Bri
 2. 在 `BridgeRimChatSettings` 中添加对应开关
 3. 在语言文件中添加翻译键
 4. 更新 `EstimateHeight` 中的高度计算
+
+### 新增上下文推送（ContextPush）
+
+当前仅有 ContextPull 方向。如果 RimChat 未来提供变量注册 API，可参考 RimMind-Bridge-RimTalk 的 `ContextPushBridge` 和 `PersonaPushBridge` 实现推送功能。
+
+## 与 RimMind-Bridge-RimTalk 的对比
+
+| 特性 | Bridge-RimChat | Bridge-RimTalk |
+|------|---------------|----------------|
+| 对话门控 triggerType | 仅 "PlayerInput" | "Chitchat" / "Auto" / "PlayerInput" |
+| 动作门控 | ActionGate（外交/社交/招募/叙事者） | 无（RimTalk 无动作系统） |
+| 上下文拉取 | 外交历史 + RPG 历史 | RimTalk 对话历史 |
+| 上下文推送 | 无 | 人格/记忆/叙事者/顾问/塑造 |
+| API Shim 层 | 无（原始反射） | RimTalkApiShim |
+| API 可用性检查 | 仅 ModsConfig.IsActive | IsRimTalkApiAvailable（反射检查类型） |

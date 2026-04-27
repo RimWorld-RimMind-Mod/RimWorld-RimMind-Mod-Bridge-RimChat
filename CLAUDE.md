@@ -23,6 +23,8 @@ Source/
 │   └── ContextPullBridge.cs     上下文拉取，从 RimChat 读取对话历史注册为 RimMind Provider
 ├── Cooldown/
 │   └── SharedIncidentCooldown.cs 事件触发共享冷却，防止 RimMind-Storyteller 与 RimChat 短时间内重复触发事件
+├── Debug/
+│   └── BridgeRimChatDebugActions.cs 调试动作，显示桥接状态和测试门控逻辑
 ├── Detection/
 │   └── RimChatDetector.cs       检测 RimChat 是否激活（带缓存）
 └── Settings/
@@ -40,7 +42,6 @@ static class RimChatDetector {
     const string RimChatPackageId = "yancy.rimchat";
 
     bool IsRimChatActive  // RimChat 模组是否激活（6000 tick 缓存）
-    void InvalidateCache() // 手动刷新缓存（当前无调用者）
 }
 ```
 
@@ -51,18 +52,15 @@ static class RimChatDetector {
 ```csharp
 static class DialogueGate {
     bool ShouldSkipDialogue(Pawn pawn, string triggerType)
+    // 仅 triggerType == "PlayerInput" 时检查门控，其他类型一律放行
+
     bool ShouldSkipFloatMenuOption()
+    // 判断是否跳过 RimMind 的"与X对话"浮动菜单
+
     void RegisterSkipChecks()
-    void UnregisterSkipChecks() // 当前无调用者
+    // 注册到 RimMindAPI.RegisterDialogueSkipCheck / RegisterFloatMenuSkipCheck
 }
 ```
-
-门控逻辑：
-
-| 条件 | 跳过条件 |
-|------|---------|
-| `"PlayerInput"` 对话 | `enableDialogueGate && skipPlayerDialogue && !forceRimMindPlayerDialogue` |
-| 浮动菜单 | `enableDialogueGate && skipPlayerDialogue && !forceRimMindPlayerDialogue` |
 
 ### ActionGate
 
@@ -73,7 +71,6 @@ static class ActionGate {
     bool ShouldSkipAction(string intentId)
     bool ShouldSkipStorytellerIncident()
     void Register()
-    void Unregister() // 当前无调用者
 }
 ```
 
@@ -82,7 +79,7 @@ static class ActionGate {
 | 分类 | 动作 ID | 设置开关 |
 |------|---------|---------|
 | 外交 | `adjust_faction`, `trigger_incident` | skipDiplomacyActions |
-| 社交 | `romance_accept`, `romance_breakup` | skipSocialActions |
+| 社交 | `romance_attempt`, `romance_breakup` | skipSocialActions |
 | 招募 | `recruit_agree` | skipRecruitAgree |
 | 叙事者事件 | Storyteller incident | skipTriggerIncident + SharedIncidentCooldown |
 
@@ -94,8 +91,7 @@ static class ActionGate {
 static class SharedIncidentCooldown {
     void RecordIncident()
     bool IsOnCooldown(int cooldownTicks)
-    int LastIncidentTick { get; }  // 当前无读取者
-    void Reset()                   // 当前无调用者
+    void ExposeData()
 }
 ```
 
@@ -128,7 +124,7 @@ class BridgeRimChatSettings : ModSettings {
     bool enableActionGate;            // 默认 true
     bool skipDiplomacyActions;        // 默认 true
     bool skipTriggerIncident;         // 默认 true
-    bool skipSocialActions;           // 默认 false
+    bool skipSocialActions;           // 默认 false（跳过 romance_attempt, romance_breakup）
     bool skipRecruitAgree;            // 默认 false
     int incidentCooldownTicks;        // 默认 60000，Slider 6000~180000，步进 1500
     bool forceRimMindActions;         // 默认 false
@@ -162,6 +158,7 @@ RimMindBridgeRimChatMod 构造函数
 | `RimMind.Bridge.RimChat` | Source/ 根目录 | Mod 入口 |
 | `RimMind.Bridge.RimChat.Bridge` | Bridge/ | 桥接模块 |
 | `RimMind.Bridge.RimChat.Cooldown` | Cooldown/ | 冷却管理 |
+| `RimMind.Bridge.RimChat.Debug` | Debug/ | 调试动作 |
 | `RimMind.Bridge.RimChat.Detection` | Detection/ | RimChat 检测 |
 | `RimMind.Bridge.RimChat.Settings` | Settings/ | 设置 |
 
