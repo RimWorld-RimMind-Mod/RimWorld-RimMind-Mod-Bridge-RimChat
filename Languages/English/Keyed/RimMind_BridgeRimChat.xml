@@ -5,8 +5,12 @@
   <RimMind.BridgeRimChat.Settings.TabLabel>Bridge (RimChat)</RimMind.BridgeRimChat.Settings.TabLabel>
   <!-- BridgeRimChatSettings.cs - Dialogue Gate -->
   <RimMind.BridgeRimChat.Settings.Section.DialogueGate>Dialogue Gate</RimMind.BridgeRimChat.Settings.Section.DialogueGate>
-  <RimMind.BridgeRimChat.Settings.EnableDialogueGate>Enable dialogue gate</RimMind.BridgeRimChat.Settings.EnableDialogueGate>
-  <RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc>When RimChat is present, skip RimMind-Dialogue's player dialogue entry to avoid duplicate chat interfaces</RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc>
+  <RimMind.BridgeRimChat.Settings.EnablePlayerInputGate>Gate player dialogue</RimMind.BridgeRimChat.Settings.EnablePlayerInputGate>
+  <RimMind.BridgeRimChat.Settings.EnablePlayerInputGate.Desc>When RimChat is present, skip RimMind-Dialogue's player dialogue entry to avoid duplicate chat interfaces</RimMind.BridgeRimChat.Settings.EnablePlayerInputGate.Desc>
+  <RimMind.BridgeRimChat.Settings.EnableChitchatGate>Gate chitchat triggers</RimMind.BridgeRimChat.Settings.EnableChitchatGate>
+  <RimMind.BridgeRimChat.Settings.EnableChitchatGate.Desc>When RimChat is present, skip RimMind-Dialogue's chitchat triggers to avoid duplicate conversations</RimMind.BridgeRimChat.Settings.EnableChitchatGate.Desc>
+  <RimMind.BridgeRimChat.Settings.EnableAutoGate>Gate auto dialogue</RimMind.BridgeRimChat.Settings.EnableAutoGate>
+  <RimMind.BridgeRimChat.Settings.EnableAutoGate.Desc>When RimChat is present, skip RimMind-Dialogue's auto dialogue triggers to avoid duplicate conversations</RimMind.BridgeRimChat.Settings.EnableAutoGate.Desc>
   <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue>Skip player dialogue</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue>
   <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>When RimChat is present, skip RimMind's player dialogue triggers and remove the "Chat with X" float menu option</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>
   <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>Keep RimMind player dialogue</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>

@@ -12,12 +12,16 @@ namespace RimMind.Bridge.RimChat.Bridge
             if (!RimChatDetector.IsRimChatActive) return false;
 
             var settings = BridgeRimChatSettings.Get();
-            if (!settings.enableDialogueGate) return false;
 
-            if (triggerType == "PlayerInput" && settings.skipPlayerDialogue)
-                return !settings.forceRimMindPlayerDialogue;
-
-            return false;
+            return triggerType switch
+            {
+                "Chitchat" => settings.enableChitchatGate,
+                "Auto" => settings.enableAutoGate,
+                "PlayerInput" => settings.enablePlayerInputGate
+                    && settings.skipPlayerDialogue
+                    && !settings.forceRimMindPlayerDialogue,
+                _ => false
+            };
         }
 
         public static bool ShouldSkipFloatMenuOption()
@@ -25,9 +29,10 @@ namespace RimMind.Bridge.RimChat.Bridge
             if (!RimChatDetector.IsRimChatActive) return false;
 
             var settings = BridgeRimChatSettings.Get();
-            if (!settings.enableDialogueGate) return false;
 
-            return settings.skipPlayerDialogue && !settings.forceRimMindPlayerDialogue;
+            return settings.enablePlayerInputGate
+                && settings.skipPlayerDialogue
+                && !settings.forceRimMindPlayerDialogue;
         }
 
         internal static void RegisterSkipChecks()

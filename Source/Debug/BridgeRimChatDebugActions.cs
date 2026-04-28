@@ -19,9 +19,12 @@ namespace RimMind.Bridge.RimChat.Debug
             var settings = BridgeRimChatSettings.Get();
             var sb = new StringBuilder("[RimMind-Bridge-RimChat] Bridge State:\n");
             sb.AppendLine($"  RimChatDetector.IsRimChatActive: {RimChatDetector.IsRimChatActive}");
+            sb.AppendLine($"  RimChatDetector.IsRimChatApiAvailable: {RimChatDetector.IsRimChatApiAvailable}");
             sb.AppendLine();
             sb.AppendLine("  DialogueGate:");
-            sb.AppendLine($"    enableDialogueGate: {settings.enableDialogueGate}");
+            sb.AppendLine($"    enablePlayerInputGate: {settings.enablePlayerInputGate}");
+            sb.AppendLine($"    enableChitchatGate: {settings.enableChitchatGate}");
+            sb.AppendLine($"    enableAutoGate: {settings.enableAutoGate}");
             sb.AppendLine($"    skipPlayerDialogue: {settings.skipPlayerDialogue}");
             sb.AppendLine($"    forceRimMindPlayerDialogue: {settings.forceRimMindPlayerDialogue}");
             sb.AppendLine();

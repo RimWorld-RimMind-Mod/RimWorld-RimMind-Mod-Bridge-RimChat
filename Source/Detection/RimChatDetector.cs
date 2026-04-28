@@ -1,4 +1,4 @@
-using System;
+using HarmonyLib;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Detection
@@ -7,32 +7,22 @@ namespace RimMind.Bridge.RimChat.Detection
     {
         public const string RimChatPackageId = "yancy.rimchat";
 
-        private static bool? _cachedResult;
-        private static int _cacheTick = -1;
-        private const int CacheIntervalTicks = 6000;
+        public static bool IsRimChatActive => ModsConfig.IsActive(RimChatPackageId);
 
-        private static int SafeTicksGame
+        private static bool? _apiAvailable;
+        private static bool _apiChecked;
+
+        public static bool IsRimChatApiAvailable
         {
             get
             {
-                try { return Find.TickManager?.TicksGame ?? 0; }
-                catch { return 0; }
-            }
-        }
-
-        public static bool IsRimChatActive
-        {
-            get
-            {
-                int now = SafeTicksGame;
-                if (_cachedResult == null || now - _cacheTick > CacheIntervalTicks)
+                if (!_apiChecked)
                 {
-                    _cachedResult = ModsConfig.IsActive(RimChatPackageId);
-                    _cacheTick = now;
+                    _apiAvailable = IsRimChatActive && AccessTools.TypeByName("RimChat.API.RimChatAPI") != null;
+                    _apiChecked = true;
                 }
-                return _cachedResult.Value;
+                return _apiAvailable ?? false;
             }
         }
-
     }
 }

@@ -5,8 +5,12 @@
   <RimMind.BridgeRimChat.Settings.TabLabel>桥接（RimChat）</RimMind.BridgeRimChat.Settings.TabLabel>
   <!-- BridgeRimChatSettings.cs - 对话门控 -->
   <RimMind.BridgeRimChat.Settings.Section.DialogueGate>对话门控</RimMind.BridgeRimChat.Settings.Section.DialogueGate>
-  <RimMind.BridgeRimChat.Settings.EnableDialogueGate>启用对话门控</RimMind.BridgeRimChat.Settings.EnableDialogueGate>
-  <RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc>RimChat存在时，跳过RimMind-Dialogue的玩家对话入口，避免重复的聊天界面</RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc>
+  <RimMind.BridgeRimChat.Settings.EnablePlayerInputGate>启用玩家对话门控</RimMind.BridgeRimChat.Settings.EnablePlayerInputGate>
+  <RimMind.BridgeRimChat.Settings.EnablePlayerInputGate.Desc>RimChat存在时，跳过RimMind-Dialogue的玩家对话入口，避免重复的聊天界面</RimMind.BridgeRimChat.Settings.EnablePlayerInputGate.Desc>
+  <RimMind.BridgeRimChat.Settings.EnableChitchatGate>启用闲聊门控</RimMind.BridgeRimChat.Settings.EnableChitchatGate>
+  <RimMind.BridgeRimChat.Settings.EnableChitchatGate.Desc>RimChat存在时，跳过RimMind-Dialogue的闲聊触发，避免重复对话</RimMind.BridgeRimChat.Settings.EnableChitchatGate.Desc>
+  <RimMind.BridgeRimChat.Settings.EnableAutoGate>启用自动对话门控</RimMind.BridgeRimChat.Settings.EnableAutoGate>
+  <RimMind.BridgeRimChat.Settings.EnableAutoGate.Desc>RimChat存在时，跳过RimMind-Dialogue的自动对话触发，避免重复对话</RimMind.BridgeRimChat.Settings.EnableAutoGate.Desc>
   <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue>跳过玩家对话</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue>
   <RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>RimChat存在时，跳过RimMind的玩家对话触发并移除"与X对话"浮动菜单选项</RimMind.BridgeRimChat.Settings.SkipPlayerDialogue.Desc>
   <RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>保留RimMind玩家对话</RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue>
