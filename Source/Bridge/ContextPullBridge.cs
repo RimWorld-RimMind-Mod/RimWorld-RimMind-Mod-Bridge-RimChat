@@ -1,10 +1,12 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Core;
+using RimMind.Core.Context;
 using RimMind.Core.Prompt;
 using Verse;
 
@@ -30,10 +32,14 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static void RegisterDiplomacyProvider()
         {
-            RimMindAPI.RegisterStaticProvider("rimchat_diplomacy", () =>
-            {
-                return (string?)BuildDiplomacyContext();
-            }, PromptSection.PriorityAuxiliary, ModId);
+            ContextKeyRegistry.Register("rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
+                pawn =>
+                {
+                    var result = BuildDiplomacyContext();
+                    return string.IsNullOrEmpty(result)
+                        ? new List<ContextEntry>()
+                        : new List<ContextEntry> { new ContextEntry(result!) };
+                }, ModId);
         }
 
         private static string? BuildDiplomacyContext()
@@ -116,10 +122,14 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static void RegisterRpgProvider()
         {
-            RimMindAPI.RegisterPawnContextProvider("rimchat_rpg_history", pawn =>
-            {
-                return BuildRpgContext(pawn);
-            }, PromptSection.PriorityMemory, ModId);
+            ContextKeyRegistry.Register("rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
+                pawn =>
+                {
+                    var result = BuildRpgContext(pawn);
+                    return string.IsNullOrEmpty(result)
+                        ? new List<ContextEntry>()
+                        : new List<ContextEntry> { new ContextEntry(result!) };
+                }, ModId);
         }
 
         private static string? BuildRpgContext(Pawn pawn)
@@ -228,7 +238,8 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         public static void Unregister()
         {
-            RimMindAPI.UnregisterModProviders(ModId);
+            ContextKeyRegistry.Unregister("rimchat_diplomacy");
+            ContextKeyRegistry.Unregister("rimchat_rpg_history");
         }
 
         public static void Refresh()
