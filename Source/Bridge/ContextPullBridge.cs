@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using HarmonyLib;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Core;
@@ -48,21 +47,13 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             try
             {
-                var managerType = AccessTools.TypeByName("RimChat.DiplomacySystem.GameComponent_DiplomacyManager");
+                var managerType = RimChatApiShim.DiplomacyManagerType;
                 if (managerType == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildDiplomacyContext: managerType not found."); return null; }
 
-                var instanceProp = managerType.GetProperty("Instance",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (instanceProp == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildDiplomacyContext: Instance property not found."); return null; }
-
-                var manager = instanceProp.GetValue(null);
+                var manager = RimChatApiShim.GetStaticPropertyValue(managerType, "Instance");
                 if (manager == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildDiplomacyContext: manager instance is null."); return null; }
 
-                var sessionsField = managerType.GetField("dialogueSessions",
-                    BindingFlags.Public | BindingFlags.Instance);
-                if (sessionsField == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildDiplomacyContext: dialogueSessions field not found."); return null; }
-
-                var sessions = sessionsField.GetValue(manager) as IList;
+                var sessions = RimChatApiShim.GetInstanceFieldValue(manager, "dialogueSessions") as IList;
                 if (sessions == null || sessions.Count == 0) return null;
 
                 var sb = new StringBuilder("[RimChat Diplomacy]");
@@ -138,21 +129,14 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             try
             {
-                var managerType = AccessTools.TypeByName("RimChat.Memory.RpgNpcDialogueArchiveManager");
+                var managerType = RimChatApiShim.RpgArchiveManagerType;
                 if (managerType == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildRpgContext: managerType not found."); return null; }
 
-                var instanceProp = managerType.GetProperty("Instance",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (instanceProp == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildRpgContext: Instance property not found."); return null; }
-
-                var manager = instanceProp.GetValue(null);
+                var manager = RimChatApiShim.GetStaticPropertyValue(managerType, "Instance");
                 if (manager == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildRpgContext: manager instance is null."); return null; }
 
-                var cacheField = managerType.GetField("_archiveCache",
-                    BindingFlags.NonPublic | BindingFlags.Instance);
-                if (cacheField == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildRpgContext: _archiveCache field not found."); return null; }
-
-                var cache = cacheField.GetValue(manager) as IDictionary;
+                var cache = RimChatApiShim.GetInstanceFieldValue(manager, "_archiveCache",
+                    BindingFlags.NonPublic | BindingFlags.Instance) as IDictionary;
                 if (cache == null) return null;
 
                 object? archive = null;

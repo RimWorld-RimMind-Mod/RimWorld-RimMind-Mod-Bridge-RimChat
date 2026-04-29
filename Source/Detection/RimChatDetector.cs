@@ -1,4 +1,3 @@
-using HarmonyLib;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Detection
@@ -18,7 +17,7 @@ namespace RimMind.Bridge.RimChat.Detection
             {
                 if (!_apiChecked)
                 {
-                    _apiAvailable = IsRimChatActive && AccessTools.TypeByName("RimChat.API.RimChatAPI") != null;
+                    _apiAvailable = IsRimChatActive && Bridge.RimChatApiShim.ApiType != null;
                     _apiChecked = true;
                 }
                 return _apiAvailable ?? false;
