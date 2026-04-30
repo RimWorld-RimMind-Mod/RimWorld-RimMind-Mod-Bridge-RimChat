@@ -100,8 +100,10 @@ cd RimWorld-RimMind-Mod-Bridge-RimChat
 
 从 RimChat 拉取对话历史，注册为 RimMind 的上下文 Provider，使 RimMind 的 AI 请求也能感知 RimChat 的对话内容：
 
-- **拉取外交对话历史**：将 RimChat 的外交对话历史注册为 RimMind 的静态上下文 Provider（默认开启）
-- **拉取 RPG 对话历史**：将 RimChat 的 RPG 对话历史注册为 RimMind 的 Pawn 上下文 Provider（默认关闭）
+- **拉取外交对话历史**：将 RimChat 的外交对话历史注册为 RimMind 的静态上下文（默认开启）
+- **拉取 RPG 对话历史**：将 RimChat 的 RPG 对话历史注册为 RimMind 的 Pawn 上下文（默认关闭）
+
+所有 RimChat 数据访问通过 `RimChatApiShim` 反射封装层进行，延迟解析 + NoInlining 防止类型加载异常，try-catch 保护确保 RimChat 内部结构变更时不会崩溃。
 
 ## 设置项
 
@@ -131,7 +133,7 @@ cd RimWorld-RimMind-Mod-Bridge-RimChat
 
 | 设置 | 默认值 | 说明 |
 |------|--------|------|
-| 启用上下文拉取 | 开启 | 从 RimChat 拉取数据注册为 RimMind 上下文 Provider |
+| 启用上下文拉取 | 开启 | 从 RimChat 拉取数据注册为 RimMind 上下文 |
 | 拉取外交对话历史 | 开启 | 将 RimChat 外交对话历史注入 RimMind 上下文 |
 | 拉取 RPG 对话历史 | 关闭 | 将 RimChat RPG 对话历史注入 RimMind 上下文 |
 
@@ -156,7 +158,7 @@ A: "跳过外交类动作"跳过的是 RimMind-Actions 中的 adjust_faction 和
 A: 不会。该选项仅影响 RimMind-Actions 的动作执行，不影响 RimMind-Storyteller 的事件触发。叙事者事件的跳过由"跳过叙事者事件"选项独立控制。
 
 **Q: RimChat 更新后反射读取失败怎么办？**
-A: 本模组所有反射读取都有 try-catch 保护。RimChat 内部结构变更只会导致对应功能静默失效，不会崩溃。
+A: 本模组所有 RimChat 数据访问通过 RimChatApiShim 反射封装层进行，所有反射调用都有 try-catch 保护。RimChat 内部结构变更只会导致对应功能静默失效，不会崩溃。
 
 ## 致谢
 
@@ -264,8 +266,10 @@ When RimChat is active, automatically skips RimMind-Actions that overlap with Ri
 
 Pulls RimChat's dialogue history and registers as RimMind context providers, enabling RimMind's AI requests to perceive RimChat's conversation content:
 
-- **Pull diplomacy dialogue history**: Register RimChat's diplomacy dialogue history as RimMind's static context provider (default: on)
-- **Pull RPG dialogue history**: Register RimChat's RPG dialogue history as RimMind's pawn context provider (default: off)
+- **Pull diplomacy dialogue history**: Register RimChat's diplomacy dialogue history as RimMind's static context (default: on)
+- **Pull RPG dialogue history**: Register RimChat's RPG dialogue history as RimMind's pawn context (default: off)
+
+All RimChat data access goes through the `RimChatApiShim` reflection layer with lazy resolution + NoInlining to prevent type loading exceptions, and try-catch protection ensures no crashes when RimChat's internal structure changes.
 
 ## Settings
 
@@ -320,7 +324,7 @@ A: "Skip diplomacy actions" skips the adjust_faction and trigger_incident action
 A: No. This option only affects RimMind-Actions execution and does not affect RimMind-Storyteller incident triggers. Storyteller incident skipping is independently controlled by the "Skip Storyteller incident" option.
 
 **Q: What if RimChat's internal structure changes after an update?**
-A: All reflection reads have try-catch protection. Internal structure changes will only cause affected features to silently fail without crashing.
+A: All RimChat data access goes through the RimChatApiShim reflection layer with try-catch protection. Internal structure changes will only cause affected features to silently fail without crashing.
 
 ## Acknowledgments
 
