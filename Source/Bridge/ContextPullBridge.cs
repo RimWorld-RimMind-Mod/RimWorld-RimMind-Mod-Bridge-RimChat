@@ -1,10 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using HarmonyLib;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Core;
+using RimMind.Core.Context;
 using RimMind.Core.Prompt;
 using Verse;
 
@@ -30,10 +31,14 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static void RegisterDiplomacyProvider()
         {
-            RimMindAPI.RegisterStaticProvider("rimchat_diplomacy", () =>
-            {
-                return (string?)BuildDiplomacyContext();
-            }, PromptSection.PriorityAuxiliary, ModId);
+            ContextKeyRegistry.Register("rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
+                pawn =>
+                {
+                    var result = BuildDiplomacyContext();
+                    return string.IsNullOrEmpty(result)
+                        ? new List<ContextEntry>()
+                        : new List<ContextEntry> { new ContextEntry(result!) };
+                }, ModId);
         }
 
         private static string? BuildDiplomacyContext()
@@ -42,21 +47,13 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             try
             {
-                var managerType = AccessTools.TypeByName("RimChat.DiplomacySystem.GameComponent_DiplomacyManager");
-                if (managerType == null) return null;
+                var managerType = RimChatApiShim.DiplomacyManagerType;
+                if (managerType == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildDiplomacyContext: managerType not found."); return null; }
 
-                var instanceProp = managerType.GetProperty("Instance",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (instanceProp == null) return null;
+                var manager = RimChatApiShim.GetStaticPropertyValue(managerType, "Instance");
+                if (manager == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildDiplomacyContext: manager instance is null."); return null; }
 
-                var manager = instanceProp.GetValue(null);
-                if (manager == null) return null;
-
-                var sessionsField = managerType.GetField("dialogueSessions",
-                    BindingFlags.Public | BindingFlags.Instance);
-                if (sessionsField == null) return null;
-
-                var sessions = sessionsField.GetValue(manager) as IList;
+                var sessions = RimChatApiShim.GetInstanceFieldValue(manager, "dialogueSessions") as IList;
                 if (sessions == null || sessions.Count == 0) return null;
 
                 var sb = new StringBuilder("[RimChat Diplomacy]");
@@ -107,18 +104,23 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }
                 return sessionCount > 0 ? sb.ToString().TrimEnd() : null;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.WarningOnce($"[RimMind-Bridge-RimChat] Diplomacy context pull failed: {ex.Message}", 87421);
                 return null;
             }
         }
 
         private static void RegisterRpgProvider()
         {
-            RimMindAPI.RegisterPawnContextProvider("rimchat_rpg_history", pawn =>
-            {
-                return BuildRpgContext(pawn);
-            }, PromptSection.PriorityMemory, ModId);
+            ContextKeyRegistry.Register("rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
+                pawn =>
+                {
+                    var result = BuildRpgContext(pawn);
+                    return string.IsNullOrEmpty(result)
+                        ? new List<ContextEntry>()
+                        : new List<ContextEntry> { new ContextEntry(result!) };
+                }, ModId);
         }
 
         private static string? BuildRpgContext(Pawn pawn)
@@ -127,21 +129,14 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             try
             {
-                var managerType = AccessTools.TypeByName("RimChat.Memory.RpgNpcDialogueArchiveManager");
-                if (managerType == null) return null;
+                var managerType = RimChatApiShim.RpgArchiveManagerType;
+                if (managerType == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildRpgContext: managerType not found."); return null; }
 
-                var instanceProp = managerType.GetProperty("Instance",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (instanceProp == null) return null;
+                var manager = RimChatApiShim.GetStaticPropertyValue(managerType, "Instance");
+                if (manager == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildRpgContext: manager instance is null."); return null; }
 
-                var manager = instanceProp.GetValue(null);
-                if (manager == null) return null;
-
-                var cacheField = managerType.GetField("_archiveCache",
-                    BindingFlags.NonPublic | BindingFlags.Instance);
-                if (cacheField == null) return null;
-
-                var cache = cacheField.GetValue(manager) as IDictionary;
+                var cache = RimChatApiShim.GetInstanceFieldValue(manager, "_archiveCache",
+                    BindingFlags.NonPublic | BindingFlags.Instance) as IDictionary;
                 if (cache == null) return null;
 
                 object? archive = null;
@@ -151,7 +146,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                         BindingFlags.Public | BindingFlags.Instance);
                     if (pawnLoadIdField != null)
                     {
-                        int archivePawnId = (int)pawnLoadIdField.GetValue(entry.Value);
+                        int archivePawnId = System.Convert.ToInt32(pawnLoadIdField.GetValue(entry.Value));
                         if (archivePawnId == pawn.thingIDNumber)
                         {
                             archive = entry.Value;
@@ -212,8 +207,9 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }
                 return sessionCount > 0 ? sb.ToString().TrimEnd() : null;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Log.WarningOnce($"[RimMind-Bridge-RimChat] RPG context pull failed: {ex.Message}", 87422);
                 return null;
             }
         }
@@ -226,7 +222,14 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         public static void Unregister()
         {
-            RimMindAPI.UnregisterModProviders(ModId);
+            ContextKeyRegistry.Unregister("rimchat_diplomacy");
+            ContextKeyRegistry.Unregister("rimchat_rpg_history");
+        }
+
+        public static void Refresh()
+        {
+            Unregister();
+            Register();
         }
     }
 }

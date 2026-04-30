@@ -1,12 +1,16 @@
+using RimMind.Bridge.RimChat.Bridge;
+using RimMind.Bridge.RimChat.Cooldown;
+using RimMind.Core.UI;
 using UnityEngine;
 using Verse;
-using RimMind.Core.UI;
 
 namespace RimMind.Bridge.RimChat.Settings
 {
     public class BridgeRimChatSettings : ModSettings
     {
-        public bool enableDialogueGate = true;
+        public bool enablePlayerInputGate = true;
+        public bool enableChitchatGate = true;
+        public bool enableAutoGate = true;
         public bool skipPlayerDialogue = true;
         public bool forceRimMindPlayerDialogue = false;
 
@@ -33,7 +37,9 @@ namespace RimMind.Bridge.RimChat.Settings
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref enableDialogueGate, "enableDialogueGate", true);
+            Scribe_Values.Look(ref enablePlayerInputGate, "enablePlayerInputGate", true);
+            Scribe_Values.Look(ref enableChitchatGate, "enableChitchatGate", true);
+            Scribe_Values.Look(ref enableAutoGate, "enableAutoGate", true);
             Scribe_Values.Look(ref skipPlayerDialogue, "skipPlayerDialogue", true);
             Scribe_Values.Look(ref forceRimMindPlayerDialogue, "forceRimMindPlayerDialogue", false);
 
@@ -48,6 +54,8 @@ namespace RimMind.Bridge.RimChat.Settings
             Scribe_Values.Look(ref enableContextPull, "enableContextPull", true);
             Scribe_Values.Look(ref pullDiplomacyHistory, "pullDiplomacyHistory", true);
             Scribe_Values.Look(ref pullRpgHistory, "pullRpgHistory", false);
+
+            SharedIncidentCooldown.ExposeData();
         }
 
         private static Vector2 _scrollPos = Vector2.zero;
@@ -55,6 +63,10 @@ namespace RimMind.Bridge.RimChat.Settings
         public static void DrawSettingsContent(Rect inRect)
         {
             var s = Get();
+
+            bool oldEnableContextPull = s.enableContextPull;
+            bool oldPullDiplomacy = s.pullDiplomacyHistory;
+            bool oldPullRpg = s.pullRpgHistory;
 
             Rect contentArea = SettingsUIHelper.SplitContentArea(inRect);
             Rect bottomBar = SettingsUIHelper.SplitBottomBar(inRect);
@@ -67,10 +79,10 @@ namespace RimMind.Bridge.RimChat.Settings
             listing.Begin(viewRect);
 
             SettingsUIHelper.DrawSectionHeader(listing, "RimMind.BridgeRimChat.Settings.Section.DialogueGate".Translate());
-            listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.EnableDialogueGate".Translate(),
-                ref s.enableDialogueGate,
-                "RimMind.BridgeRimChat.Settings.EnableDialogueGate.Desc".Translate());
-            if (s.enableDialogueGate)
+            listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.EnablePlayerInputGate".Translate(),
+                ref s.enablePlayerInputGate,
+                "RimMind.BridgeRimChat.Settings.EnablePlayerInputGate.Desc".Translate());
+            if (s.enablePlayerInputGate)
             {
                 listing.CheckboxLabeled("  " + "RimMind.BridgeRimChat.Settings.SkipPlayerDialogue".Translate(),
                     ref s.skipPlayerDialogue,
@@ -82,6 +94,12 @@ namespace RimMind.Bridge.RimChat.Settings
                         "RimMind.BridgeRimChat.Settings.ForceRimMindPlayerDialogue.Desc".Translate());
                 }
             }
+            listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.EnableChitchatGate".Translate(),
+                ref s.enableChitchatGate,
+                "RimMind.BridgeRimChat.Settings.EnableChitchatGate.Desc".Translate());
+            listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.EnableAutoGate".Translate(),
+                ref s.enableAutoGate,
+                "RimMind.BridgeRimChat.Settings.EnableAutoGate.Desc".Translate());
 
             SettingsUIHelper.DrawSectionHeader(listing, "RimMind.BridgeRimChat.Settings.Section.ActionGate".Translate());
             listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.EnableActionGate".Translate(),
@@ -134,7 +152,9 @@ namespace RimMind.Bridge.RimChat.Settings
 
             SettingsUIHelper.DrawBottomBar(bottomBar, () =>
             {
-                s.enableDialogueGate = true;
+                s.enablePlayerInputGate = true;
+                s.enableChitchatGate = true;
+                s.enableAutoGate = true;
                 s.skipPlayerDialogue = true;
                 s.forceRimMindPlayerDialogue = false;
                 s.enableActionGate = true;
@@ -149,6 +169,13 @@ namespace RimMind.Bridge.RimChat.Settings
                 s.pullRpgHistory = false;
             });
 
+            if (s.enableContextPull != oldEnableContextPull
+                || s.pullDiplomacyHistory != oldPullDiplomacy
+                || s.pullRpgHistory != oldPullRpg)
+            {
+                ContextPullBridge.Refresh();
+            }
+
             Get().Write();
         }
 
@@ -156,11 +183,12 @@ namespace RimMind.Bridge.RimChat.Settings
         {
             float h = 30f;
             h += 24f + 24f;
-            if (s.enableDialogueGate)
+            if (s.enablePlayerInputGate)
                 h += 24f + (s.skipPlayerDialogue ? 24f : 0f);
             h += 24f + 24f;
+            h += 24f + 24f;
             if (s.enableActionGate)
-                h += 24f * 4 + (s.skipTriggerIncident ? 24f + 32f : 0f) + 24f;
+                h += 24f * 4 + (s.skipTriggerIncident ? 24f + 24f + 32f : 0f) + 24f;
             h += 24f + 24f;
             if (s.enableContextPull)
                 h += 24f * 2;

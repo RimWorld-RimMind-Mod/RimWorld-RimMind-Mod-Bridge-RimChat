@@ -17,7 +17,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static readonly HashSet<string> SocialActions = new HashSet<string>
         {
-            "romance_accept",
+            "romance_attempt",
             "romance_breakup",
         };
 
@@ -59,9 +59,5 @@ namespace RimMind.Bridge.RimChat.Bridge
             RimMindAPI.RegisterStorytellerIncidentSkipCheck(ShouldSkipStorytellerIncident);
         }
 
-        internal static void Unregister()
-        {
-            RimMindAPI.UnregisterActionSkipCheck("rimchat_bridge");
-        }
     }
 }
