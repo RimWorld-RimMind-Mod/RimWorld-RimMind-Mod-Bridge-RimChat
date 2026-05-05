@@ -52,11 +52,28 @@ namespace RimMind.Bridge.RimChat.Bridge
             return SharedIncidentCooldown.IsOnCooldown(settings.incidentCooldownTicks);
         }
 
+        private static string? _incidentCallbackKey;
+        private static string? _storytellerSkipCheckKey;
+
         internal static void Register()
         {
             RimMindAPI.RegisterActionSkipCheck("rimchat_bridge", ShouldSkipAction);
-            RimMindAPI.RegisterIncidentExecutedCallback(SharedIncidentCooldown.RecordIncident);
-            RimMindAPI.RegisterStorytellerIncidentSkipCheck(ShouldSkipStorytellerIncident);
+            _incidentCallbackKey = RimMindAPI.RegisterIncidentExecutedCallback(SharedIncidentCooldown.RecordIncident);
+            _storytellerSkipCheckKey = RimMindAPI.RegisterStorytellerIncidentSkipCheck(ShouldSkipStorytellerIncident);
+        }
+
+        internal static void Unregister()
+        {
+            if (_incidentCallbackKey != null)
+            {
+                RimMindAPI.UnregisterIncidentExecutedCallback(_incidentCallbackKey);
+                _incidentCallbackKey = null;
+            }
+            if (_storytellerSkipCheckKey != null)
+            {
+                RimMindAPI.UnregisterStorytellerIncidentSkipCheck(_storytellerSkipCheckKey);
+                _storytellerSkipCheckKey = null;
+            }
         }
 
     }

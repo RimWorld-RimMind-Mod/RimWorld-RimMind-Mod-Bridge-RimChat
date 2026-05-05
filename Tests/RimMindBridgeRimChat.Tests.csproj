@@ -17,6 +17,9 @@
 
   <ItemGroup>
     <Compile Include="../Source/Bridge/RimChatApiShim.cs" />
+    <Compile Include="../Source/Bridge/DialogueGate.cs" />
+    <Compile Include="../Source/Bridge/ActionGate.cs" />
+    <Compile Include="../Source/Cooldown/SharedIncidentCooldown.cs" />
   </ItemGroup>
 
 </Project>
