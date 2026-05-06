@@ -1,6 +1,5 @@
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
-using RimMind.Core;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge
@@ -34,12 +33,5 @@ namespace RimMind.Bridge.RimChat.Bridge
                 && settings.skipPlayerDialogue
                 && !settings.forceRimMindPlayerDialogue;
         }
-
-        internal static void RegisterSkipChecks()
-        {
-            RimMindAPI.RegisterDialogueSkipCheck("rimchat_bridge", ShouldSkipDialogue);
-            RimMindAPI.RegisterFloatMenuSkipCheck("rimchat_bridge", ShouldSkipFloatMenuOption);
-        }
-
     }
 }

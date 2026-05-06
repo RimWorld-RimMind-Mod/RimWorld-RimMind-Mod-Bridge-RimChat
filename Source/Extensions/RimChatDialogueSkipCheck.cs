@@ -1,0 +1,13 @@
+using RimMind.Contracts.Extension;
+
+namespace RimMind.Bridge.RimChat
+{
+    internal sealed class RimChatDialogueSkipCheck : ISkipCheck
+    {
+        private readonly RimMindBridgeRimChatMod _mod;
+        public RimChatDialogueSkipCheck(RimMindBridgeRimChatMod mod) { _mod = mod; }
+        public string Id => "rimchat_bridge_dialogue";
+        public SkipCheckKind Kind => SkipCheckKind.Dialogue;
+        public bool ShouldSkip(in SkipCheckArgs args) => Bridge.DialogueGate.ShouldSkipDialogue(args.Pawn, args.Trigger);
+    }
+}

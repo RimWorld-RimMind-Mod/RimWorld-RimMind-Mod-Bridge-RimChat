@@ -4,7 +4,6 @@ using Xunit;
 
 namespace RimMind.Bridge.RimChat.Tests
 {
-    [Collection("RimChat")]
     public class SharedIncidentCooldownTests
     {
         public SharedIncidentCooldownTests()

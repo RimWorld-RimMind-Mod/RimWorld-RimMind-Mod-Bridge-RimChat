@@ -1,6 +1,6 @@
 using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Detection;
-using RimMind.Bridge.RimChat.Settings;
+using RimMind.Contracts.Extension;
 using RimMind.Core;
 using Verse;
 
@@ -12,9 +12,7 @@ namespace RimMind.Bridge.RimChat
         {
             GetSettings<BridgeRimChatSettings>();
 
-            RimMindAPI.RegisterSettingsTab("bridge_rimchat",
-                () => "RimMind.BridgeRimChat.Settings.TabLabel".Translate(),
-                BridgeRimChatSettings.DrawSettingsContent);
+            RimMindAPI.Extensions<ISettingsTab>().Register(new RimChatSettingsTab());
 
             if (!RimChatDetector.IsRimChatActive)
             {
@@ -22,10 +20,13 @@ namespace RimMind.Bridge.RimChat
                 return;
             }
 
-            DialogueGate.RegisterSkipChecks();
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatDialogueSkipCheck(this));
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatFloatMenuSkipCheck());
             Log.Message("[RimMind-Bridge-RimChat] DialogueGate registered.");
 
-            ActionGate.Register();
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatActionSkipCheck());
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatStorytellerIncidentSkipCheck());
+            RimMindAPI.Extensions<IIncidentExecutedListener>().Register(new RimChatIncidentExecutedListener());
             Log.Message("[RimMind-Bridge-RimChat] ActionGate registered.");
 
             ContextPullBridge.Register();

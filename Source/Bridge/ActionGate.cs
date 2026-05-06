@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using RimMind.Bridge.RimChat.Cooldown;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
-using RimMind.Core;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge
@@ -51,30 +50,5 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             return SharedIncidentCooldown.IsOnCooldown(settings.incidentCooldownTicks);
         }
-
-        private static string? _incidentCallbackKey;
-        private static string? _storytellerSkipCheckKey;
-
-        internal static void Register()
-        {
-            RimMindAPI.RegisterActionSkipCheck("rimchat_bridge", ShouldSkipAction);
-            _incidentCallbackKey = RimMindAPI.RegisterIncidentExecutedCallback(SharedIncidentCooldown.RecordIncident);
-            _storytellerSkipCheckKey = RimMindAPI.RegisterStorytellerIncidentSkipCheck(ShouldSkipStorytellerIncident);
-        }
-
-        internal static void Unregister()
-        {
-            if (_incidentCallbackKey != null)
-            {
-                RimMindAPI.UnregisterIncidentExecutedCallback(_incidentCallbackKey);
-                _incidentCallbackKey = null;
-            }
-            if (_storytellerSkipCheckKey != null)
-            {
-                RimMindAPI.UnregisterStorytellerIncidentSkipCheck(_storytellerSkipCheckKey);
-                _storytellerSkipCheckKey = null;
-            }
-        }
-
     }
 }

@@ -3,9 +3,10 @@ using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace RimMind.Bridge.RimChat.Tests
 {
-    [Collection("RimChat")]
     public class RimChatDialogueGateTests
     {
         public RimChatDialogueGateTests()

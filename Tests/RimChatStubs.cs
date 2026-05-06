@@ -29,7 +29,7 @@ namespace Verse
 
     public static class Scribe_Values
     {
-        public static void Look<T>(ref T value, string label, T defaultValue = default) { }
+        public static void Look<T>(ref T value, string label, T? defaultValue = default) { }
     }
 
     public class ModSettings
@@ -78,60 +78,60 @@ namespace RimMind.Bridge.RimChat.Settings
     }
 }
 
+namespace RimMind.Contracts.Extension
+{
+    public interface IExtension { string Id { get; } }
+    public interface IExtensionRegistry<T> where T : class, IExtension
+    {
+        void Register(T extension);
+        bool Unregister(string id);
+        System.Collections.Generic.IReadOnlyList<T> All { get; }
+        T? FindById(string id);
+    }
+    public interface ISettingsTab : IExtension { string Label { get; } void Draw(UnityEngine.Rect rect); }
+    public interface IToggleBehavior : IExtension { bool IsActive { get; } void Toggle(); }
+    public interface IDialogueTrigger : IExtension { void Trigger(Verse.Pawn pawn, string context, Verse.Pawn? recipient); }
+    public interface IModCooldown : IExtension { int CooldownTicks { get; } }
+    public enum SkipCheckKind { Dialogue, FloatMenu, Action, StorytellerIncident }
+    public readonly struct SkipCheckArgs { public readonly Verse.Pawn? Pawn; public readonly string? Trigger; public readonly string? IntentId; }
+    public interface ISkipCheck : IExtension { SkipCheckKind Kind { get; } bool ShouldSkip(in SkipCheckArgs args); }
+    public interface IIncidentExecutedListener : IExtension { void OnIncidentExecuted(); }
+}
+
+namespace UnityEngine
+{
+    public struct Rect { public float x, y, width, height; public Rect(float x, float y, float w, float h) { this.x = x; this.y = y; width = w; height = h; } }
+}
+
 namespace RimMind.Core
 {
+    using RimMind.Contracts.Extension;
+    using System.Collections.Generic;
+
     public static class RimMindAPI
     {
-        public static int DialogueSkipCheckCount { get; set; }
-        public static int FloatMenuSkipCheckCount { get; set; }
-        public static int ActionSkipCheckCount { get; set; }
-        public static int IncidentCallbackCount { get; set; }
-        public static int StorytellerSkipCheckCount { get; set; }
+        public static int ExtensionRegisterCount { get; set; }
 
-        public static void RegisterDialogueSkipCheck(string sourceId, System.Func<Verse.Pawn, string, bool> check)
-        {
-            DialogueSkipCheckCount++;
-        }
+        public static IExtensionRegistry<T> Extensions<T>() where T : class, IExtension
+            => new StubRegistry<T>();
 
-        public static void RegisterFloatMenuSkipCheck(string sourceId, System.Func<bool> check)
-        {
-            FloatMenuSkipCheckCount++;
-        }
+        public static bool ShouldSkipDialogue(Verse.Pawn pawn, string trigger) => false;
+        public static bool ShouldSkipFloatMenu() => false;
+        public static bool ShouldSkipAction(string intentId) => false;
+        public static bool ShouldSkipStorytellerIncident() => false;
+        public static bool CanTriggerDialogue => false;
+        public static void TriggerDialogue(Verse.Pawn pawn, string context, Verse.Pawn? recipient = null) { }
+        public static void NotifyIncidentExecuted() { }
 
-        public static void RegisterActionSkipCheck(string sourceId, System.Func<string, bool> check)
-        {
-            ActionSkipCheckCount++;
-        }
+        public static void ResetCounts() { ExtensionRegisterCount = 0; }
 
-        public static string RegisterIncidentExecutedCallback(System.Action callback)
+        private sealed class StubRegistry<T> : IExtensionRegistry<T> where T : class, IExtension
         {
-            IncidentCallbackCount++;
-            return $"cb_{IncidentCallbackCount}";
-        }
-
-        public static void UnregisterIncidentExecutedCallback(string key)
-        {
-            IncidentCallbackCount--;
-        }
-
-        public static string RegisterStorytellerIncidentSkipCheck(System.Func<bool> check)
-        {
-            StorytellerSkipCheckCount++;
-            return $"sc_{StorytellerSkipCheckCount}";
-        }
-
-        public static void UnregisterStorytellerIncidentSkipCheck(string key)
-        {
-            StorytellerSkipCheckCount--;
-        }
-
-        public static void ResetCounts()
-        {
-            DialogueSkipCheckCount = 0;
-            FloatMenuSkipCheckCount = 0;
-            ActionSkipCheckCount = 0;
-            IncidentCallbackCount = 0;
-            StorytellerSkipCheckCount = 0;
+            private readonly List<T> _items = new List<T>();
+            public void Register(T extension) { _items.Add(extension); ExtensionRegisterCount++; }
+            public bool Unregister(string id) { var item = _items.Find(x => x.Id == id); return item != null && _items.Remove(item); }
+            public IReadOnlyList<T> All => _items;
+            public T? FindById(string id) => _items.Find(x => x.Id == id);
         }
     }
 }
