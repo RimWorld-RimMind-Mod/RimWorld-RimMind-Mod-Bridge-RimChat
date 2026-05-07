@@ -1,6 +1,6 @@
 using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Cooldown;
-using RimMind.Core.UI;
+using RimMind.Adapters.UI;
 using UnityEngine;
 using Verse;
 

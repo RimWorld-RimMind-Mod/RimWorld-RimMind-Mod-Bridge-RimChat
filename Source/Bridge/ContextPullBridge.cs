@@ -1,12 +1,12 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Core;
-using RimMind.Core.Context;
-using RimMind.Core.Prompt;
+using RimMind.Kernel.Context;
+using RimMind.Kernel.Prompt;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge
