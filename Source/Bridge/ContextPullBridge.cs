@@ -1,9 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
+using RimMind.Contracts.Context;
 using RimMind.Core;
 using RimMind.Kernel.Context;
 using RimMind.Kernel.Prompt;
@@ -114,8 +115,10 @@ namespace RimMind.Bridge.RimChat.Bridge
         private static void RegisterRpgProvider()
         {
             ContextKeyRegistry.Register("rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
-                pawn =>
+                pawnObj =>
                 {
+                    var pawn = pawnObj as Verse.Pawn;
+                    if (pawn == null) return new List<ContextEntry>();
                     var result = BuildRpgContext(pawn);
                     return string.IsNullOrEmpty(result)
                         ? new List<ContextEntry>()
