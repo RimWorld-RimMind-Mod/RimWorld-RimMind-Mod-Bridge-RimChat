@@ -4,6 +4,7 @@ using LudeonTK;
 using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
+using RimMind.Contracts.Result;
 using RimMind.Core;
 using Verse;
 
@@ -51,7 +52,7 @@ namespace RimMind.Bridge.RimChat.Debug
             var pawn = Find.Selector.SingleSelectedThing as Pawn;
             if (pawn == null)
             {
-                Log.Warning("[RimMind-Bridge-RimChat] Please select a pawn on the map first.");
+                RimMindErrors.Warn("[RimMind-Bridge-RimChat] Please select a pawn on the map first.");
                 return;
             }
             var sb = new StringBuilder($"[RimMind-Bridge-RimChat] Dialogue Gate Test ({pawn.Name.ToStringShort}):\n");

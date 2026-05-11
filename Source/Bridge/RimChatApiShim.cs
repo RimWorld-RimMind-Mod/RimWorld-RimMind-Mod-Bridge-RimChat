@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 using RimMind.Bridge.RimChat.Detection;
+using RimMind.Contracts.Result;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge
@@ -38,7 +39,7 @@ namespace RimMind.Bridge.RimChat.Bridge
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimMind-Bridge-RimChat] Failed to resolve RimChat types: {ex.Message}");
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] Failed to resolve RimChat types: {ex.Message}");
             }
         }
 
@@ -61,7 +62,7 @@ namespace RimMind.Bridge.RimChat.Bridge
         {
             if (type == null)
             {
-                Log.Warning("[RimMind-Bridge-RimChat] GetStaticPropertyValue: type is null.");
+                RimMindErrors.Warn("[RimMind-Bridge-RimChat] GetStaticPropertyValue: type is null.");
                 return null;
             }
 
@@ -70,14 +71,14 @@ namespace RimMind.Bridge.RimChat.Bridge
                 var prop = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
                 if (prop == null)
                 {
-                    Log.Warning($"[RimMind-Bridge-RimChat] Static property '{propertyName}' not found on {type.Name}.");
+                    RimMindErrors.Warn($"[RimMind-Bridge-RimChat] Static property '{propertyName}' not found on {type.Name}.");
                     return null;
                 }
                 return prop.GetValue(null);
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimMind-Bridge-RimChat] GetStaticPropertyValue({type.Name}.{propertyName}) failed: {ex.Message}");
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] GetStaticPropertyValue({type.Name}.{propertyName}) failed: {ex.Message}");
                 return null;
             }
         }
@@ -90,14 +91,14 @@ namespace RimMind.Bridge.RimChat.Bridge
                 var field = instance.GetType().GetField(fieldName, flags);
                 if (field == null)
                 {
-                    Log.Warning($"[RimMind-Bridge-RimChat] Field '{fieldName}' not found on {instance.GetType().Name}.");
+                    RimMindErrors.Warn($"[RimMind-Bridge-RimChat] Field '{fieldName}' not found on {instance.GetType().Name}.");
                     return null;
                 }
                 return field.GetValue(instance);
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimMind-Bridge-RimChat] GetInstanceFieldValue({instance.GetType().Name}.{fieldName}) failed: {ex.Message}");
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] GetInstanceFieldValue({instance.GetType().Name}.{fieldName}) failed: {ex.Message}");
                 return null;
             }
         }

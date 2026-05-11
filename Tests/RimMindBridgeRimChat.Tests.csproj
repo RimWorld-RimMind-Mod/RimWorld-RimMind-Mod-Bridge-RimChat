@@ -22,4 +22,8 @@
     <Compile Include="../Source/Cooldown/SharedIncidentCooldown.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../RimMind-Core/Source/Contracts/RimMindCore.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

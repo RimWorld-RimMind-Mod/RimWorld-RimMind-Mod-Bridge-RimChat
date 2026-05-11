@@ -5,6 +5,7 @@ using System.Text;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Contracts.Context;
+using RimMind.Contracts.Result;
 using RimMind.Core;
 using RimMind.Kernel.Context;
 using RimMind.Kernel.Prompt;
@@ -49,10 +50,10 @@ namespace RimMind.Bridge.RimChat.Bridge
             try
             {
                 var managerType = RimChatApiShim.DiplomacyManagerType;
-                if (managerType == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildDiplomacyContext: managerType not found."); return null; }
+                if (managerType == null) { RimMindErrors.Warn("[RimMind-Bridge-RimChat] BuildDiplomacyContext: managerType not found."); return null; }
 
                 var manager = RimChatApiShim.GetStaticPropertyValue(managerType, "Instance");
-                if (manager == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildDiplomacyContext: manager instance is null."); return null; }
+                if (manager == null) { RimMindErrors.Warn("[RimMind-Bridge-RimChat] BuildDiplomacyContext: manager instance is null."); return null; }
 
                 var sessions = RimChatApiShim.GetInstanceFieldValue(manager, "dialogueSessions") as IList;
                 if (sessions == null || sessions.Count == 0) return null;
@@ -107,7 +108,7 @@ namespace RimMind.Bridge.RimChat.Bridge
             }
             catch (System.Exception ex)
             {
-                Log.WarningOnce($"[RimMind-Bridge-RimChat] Diplomacy context pull failed: {ex.Message}", 87421);
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] Diplomacy context pull failed: {ex.Message}");
                 return null;
             }
         }
@@ -133,10 +134,10 @@ namespace RimMind.Bridge.RimChat.Bridge
             try
             {
                 var managerType = RimChatApiShim.RpgArchiveManagerType;
-                if (managerType == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildRpgContext: managerType not found."); return null; }
+                if (managerType == null) { RimMindErrors.Warn("[RimMind-Bridge-RimChat] BuildRpgContext: managerType not found."); return null; }
 
                 var manager = RimChatApiShim.GetStaticPropertyValue(managerType, "Instance");
-                if (manager == null) { Log.Warning("[RimMind-Bridge-RimChat] BuildRpgContext: manager instance is null."); return null; }
+                if (manager == null) { RimMindErrors.Warn("[RimMind-Bridge-RimChat] BuildRpgContext: manager instance is null."); return null; }
 
                 var cache = RimChatApiShim.GetInstanceFieldValue(manager, "_archiveCache",
                     BindingFlags.NonPublic | BindingFlags.Instance) as IDictionary;
@@ -212,7 +213,7 @@ namespace RimMind.Bridge.RimChat.Bridge
             }
             catch (System.Exception ex)
             {
-                Log.WarningOnce($"[RimMind-Bridge-RimChat] RPG context pull failed: {ex.Message}", 87422);
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] RPG context pull failed: {ex.Message}");
                 return null;
             }
         }
