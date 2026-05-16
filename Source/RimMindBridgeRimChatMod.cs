@@ -1,8 +1,9 @@
 using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
-using RimMind.Contracts.Extension;
-using RimMind.Core;
+using RimMind.Application.Common.Interfaces.Extension;
+using RimMind.Presentation;
+using RimMind.Presentation.Settings;
 using Verse;
 
 namespace RimMind.Bridge.RimChat

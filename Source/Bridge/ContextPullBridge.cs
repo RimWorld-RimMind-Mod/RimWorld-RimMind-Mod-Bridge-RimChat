@@ -4,11 +4,12 @@ using System.Reflection;
 using System.Text;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
-using RimMind.Contracts.Context;
-using RimMind.Contracts.Result;
-using RimMind.Core;
-using RimMind.Kernel.Context;
-using RimMind.Kernel.Prompt;
+using RimMind.Application.Common.Interfaces.Context;
+using RimMind.Domain.ValueObjects;
+using RimMind.Presentation;
+using RimMind.Presentation.Context;
+using RimMind.Application.Features.Context;
+using RimMind.Application.Features.Prompt;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge

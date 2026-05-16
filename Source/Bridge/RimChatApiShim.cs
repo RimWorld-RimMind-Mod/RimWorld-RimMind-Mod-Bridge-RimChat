@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 using RimMind.Bridge.RimChat.Detection;
-using RimMind.Contracts.Result;
+using RimMind.Domain.ValueObjects;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge
