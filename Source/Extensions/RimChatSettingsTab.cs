@@ -1,4 +1,4 @@
-using RimMind.Application.Common.Interfaces.Extension;
+using RimMind.Presentation.Settings;
 using RimMind.Bridge.RimChat.Settings;
 using UnityEngine;
 using Verse;
