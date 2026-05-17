@@ -78,7 +78,7 @@ namespace RimMind.Bridge.RimChat.Settings
     }
 }
 
-namespace RimMind.Contracts.Extension
+namespace RimMind.Application.Common.Interfaces.Extension
 {
     public interface IExtension { string Id { get; } }
     public interface IExtensionRegistry<T> where T : class, IExtension
@@ -105,7 +105,7 @@ namespace UnityEngine
 
 namespace RimMind.Core
 {
-    using RimMind.Contracts.Extension;
+    using RimMind.Application.Common.Interfaces.Extension;
     using System.Collections.Generic;
 
     public static class RimMindAPI
