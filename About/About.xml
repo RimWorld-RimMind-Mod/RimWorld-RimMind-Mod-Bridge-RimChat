@@ -19,6 +19,10 @@
       <displayName>RimMind - Core</displayName>
       <downloadUrl>https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Core</downloadUrl>
     </li>
+    <li>
+      <packageId>yancy.rimchat</packageId>
+      <displayName>RimChat</displayName>
+    </li>
   </modDependencies>
   <loadAfter>
     <li>yancy.rimchat</li>
