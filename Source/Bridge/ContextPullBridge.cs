@@ -7,9 +7,6 @@ using RimMind.Bridge.RimChat.Settings;
 using RimMind.Application.Common.Interfaces.Context;
 using RimMind.Domain.ValueObjects;
 using RimMind.Presentation;
-using RimMind.Presentation.Context;
-using RimMind.Application.Features.Context;
-using RimMind.Application.Features.Prompt;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge
@@ -34,7 +31,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static void RegisterDiplomacyProvider()
         {
-            ContextKeyRegistry.Register("rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
+            RimMindAPI.Context.RegisterContextKey("rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
                 pawn =>
                 {
                     var result = BuildDiplomacyContext();
@@ -116,7 +113,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static void RegisterRpgProvider()
         {
-            ContextKeyRegistry.Register("rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
+            RimMindAPI.Context.RegisterContextKey("rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
                 pawnObj =>
                 {
                     var pawn = pawnObj as Verse.Pawn;
@@ -227,8 +224,8 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         public static void Unregister()
         {
-            ContextKeyRegistry.Unregister("rimchat_diplomacy");
-            ContextKeyRegistry.Unregister("rimchat_rpg_history");
+            RimMindAPI.Context.UnregisterContextKey("rimchat_diplomacy");
+            RimMindAPI.Context.UnregisterContextKey("rimchat_rpg_history");
         }
 
         public static void Refresh()
