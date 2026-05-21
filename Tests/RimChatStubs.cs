@@ -80,11 +80,12 @@ namespace RimMind.Bridge.RimChat.Settings
 
 namespace RimMind.Application.Common.Interfaces.Extension
 {
-    public interface IExtension { string Id { get; } }
+    public interface IExtension { string Id { get; } string OwnerModId { get; } }
     public interface IExtensionRegistry<T> where T : class, IExtension
     {
         void Register(T extension);
         bool Unregister(string id);
+        int UnregisterByOwner(string ownerModId);
         System.Collections.Generic.IReadOnlyList<T> All { get; }
         T? FindById(string id);
     }
@@ -103,7 +104,7 @@ namespace UnityEngine
     public struct Rect { public float x, y, width, height; public Rect(float x, float y, float w, float h) { this.x = x; this.y = y; width = w; height = h; } }
 }
 
-namespace RimMind.Core
+namespace RimMind.Presentation
 {
     using RimMind.Application.Common.Interfaces.Extension;
     using System.Collections.Generic;
@@ -130,6 +131,7 @@ namespace RimMind.Core
             private readonly List<T> _items = new List<T>();
             public void Register(T extension) { _items.Add(extension); ExtensionRegisterCount++; }
             public bool Unregister(string id) { var item = _items.Find(x => x.Id == id); return item != null && _items.Remove(item); }
+            public int UnregisterByOwner(string ownerModId) { var toRemove = _items.Where(x => x.OwnerModId == ownerModId).ToList(); foreach (var item in toRemove) _items.Remove(item); return toRemove.Count; }
             public IReadOnlyList<T> All => _items;
             public T? FindById(string id) => _items.Find(x => x.Id == id);
         }
