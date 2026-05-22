@@ -25,6 +25,7 @@
     </li>
   </modDependencies>
   <loadAfter>
+    <li>brrainz.harmony</li>
     <li>yancy.rimchat</li>
     <li>mcocdaa.RimMindCore</li>
     <li>mcocdaa.RimMindMemory</li>
