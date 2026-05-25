@@ -1,7 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Application.Common.Interfaces.Context;
@@ -31,14 +34,12 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static void RegisterDiplomacyProvider()
         {
-            RimMindAPI.Context.RegisterContextKey("rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
-                pawn =>
+            RimMindAPI.Context.ContextKeys.Register(new ContextProviderDef(
+                "rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
+                async (ctx, ct) =>
                 {
-                    var result = BuildDiplomacyContext();
-                    return string.IsNullOrEmpty(result)
-                        ? new List<ContextEntry>()
-                        : new List<ContextEntry> { new ContextEntry(result!) };
-                }, ModId);
+                    return BuildDiplomacyContext();
+                }, ModId, stalenessTicks: 1500, invalidationTriggers: new[] { "RimChatEvent" }));
         }
 
         private static string? BuildDiplomacyContext()
@@ -113,16 +114,16 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static void RegisterRpgProvider()
         {
-            RimMindAPI.Context.RegisterContextKey("rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
-                pawnObj =>
+            RimMindAPI.Context.ContextKeys.Register(new ContextProviderDef(
+                "rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
+                async (ctx, ct) =>
                 {
-                    var pawn = pawnObj as Verse.Pawn;
-                    if (pawn == null) return new List<ContextEntry>();
-                    var result = BuildRpgContext(pawn);
-                    return string.IsNullOrEmpty(result)
-                        ? new List<ContextEntry>()
-                        : new List<ContextEntry> { new ContextEntry(result!) };
-                }, ModId);
+                    if (ctx.PawnId <= 0) return null;
+                    var pawn = Find.WorldPawns.AllPawnsAlive.FirstOrDefault(p => p.thingIDNumber == ctx.PawnId)
+                        ?? Find.CurrentMap?.mapPawns?.FreeColonists.FirstOrDefault(p => p.thingIDNumber == ctx.PawnId);
+                    if (pawn == null) return null;
+                    return BuildRpgContext(pawn);
+                }, ModId, stalenessTicks: 3000, invalidationTriggers: new[] { "RimChatEvent" }));
         }
 
         private static string? BuildRpgContext(Pawn pawn)
@@ -224,8 +225,8 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         public static void Unregister()
         {
-            RimMindAPI.Context.UnregisterContextKey("rimchat_diplomacy");
-            RimMindAPI.Context.UnregisterContextKey("rimchat_rpg_history");
+            RimMindAPI.Context.ContextKeys.Unregister("rimchat_diplomacy");
+            RimMindAPI.Context.ContextKeys.Unregister("rimchat_rpg_history");
         }
 
         public static void Refresh()
