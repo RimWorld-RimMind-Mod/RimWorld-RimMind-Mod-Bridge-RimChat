@@ -22,11 +22,39 @@ namespace Verse
     public static class Find
     {
         public static TickManager TickManager = new TickManager();
+        public static WorldPawns WorldPawns = new WorldPawns();
+        public static CurrentMapHolder CurrentMap = null;
     }
 
     public class TickManager
     {
         public int TicksGame = 100000;
+    }
+
+    public class WorldPawns
+    {
+        public PawnList AllPawnsAlive = new PawnList();
+    }
+
+    public class PawnList
+    {
+        private readonly System.Collections.Generic.List<Pawn> _pawns = new System.Collections.Generic.List<Pawn>();
+        public System.Collections.Generic.List<Pawn> ToList() => _pawns;
+    }
+
+    public class CurrentMapHolder
+    {
+        public MapHolder? Value;
+    }
+
+    public class MapHolder
+    {
+        public MapPawnsHolder? mapPawns;
+    }
+
+    public class MapPawnsHolder
+    {
+        public PawnList FreeColonists = new PawnList();
     }
 
     public static class Scribe_Values
@@ -37,6 +65,7 @@ namespace Verse
     public class ModSettings
     {
         public virtual void ExposeData() { }
+        public void Write() { }
     }
 }
 
@@ -109,11 +138,15 @@ namespace UnityEngine
 namespace RimMind.Presentation
 {
     using RimMind.Application.Common.Interfaces.Extension;
+    using RimMind.Application.Common.Interfaces.Context;
+    using RimMind.Domain.ValueObjects;
     using System.Collections.Generic;
 
     public static class RimMindAPI
     {
         public static int ExtensionRegisterCount { get; set; }
+        public static int ContextRegisterCount { get; set; }
+        public static int ContextUnregisterCount { get; set; }
 
         public static IExtensionRegistry<T> Extensions<T>() where T : class, IExtension
             => new StubRegistry<T>();
@@ -126,7 +159,46 @@ namespace RimMind.Presentation
         public static void TriggerDialogue(Verse.Pawn pawn, string context, Verse.Pawn? recipient = null) { }
         public static void NotifyIncidentExecuted() { }
 
-        public static void ResetCounts() { ExtensionRegisterCount = 0; }
+        public static void ResetCounts() { ExtensionRegisterCount = 0; ContextRegisterCount = 0; ContextUnregisterCount = 0; }
+
+        // Context 子模块，供 ContextPullBridge 使用
+        public static class Context
+        {
+            public static IContextKeyRegistry ContextKeys => StubContextKeyRegistry.Instance;
+        }
+
+        private sealed class StubContextKeyRegistry : IContextKeyRegistry
+        {
+            public static readonly StubContextKeyRegistry Instance = new StubContextKeyRegistry();
+            private readonly List<KeyMeta> _metas = new List<KeyMeta>();
+
+            public void Register(KeyMeta meta)
+            {
+                _metas.Add(meta);
+                RimMindAPI.ContextRegisterCount++;
+            }
+
+            public void Register(ContextProviderDef def)
+            {
+                // 用 ContextProviderDef 的信息构造 KeyMeta
+                var meta = new KeyMeta(def.Key, def.Layer, def.Priority,
+                    _ => new List<ContextEntry>(), def.OwnerMod);
+                meta.Def = def;
+                _metas.Add(meta);
+                RimMindAPI.ContextRegisterCount++;
+            }
+
+            public bool Unregister(string key)
+            {
+                var removed = _metas.RemoveAll(m => m.Key == key) > 0;
+                if (removed) RimMindAPI.ContextUnregisterCount++;
+                return removed;
+            }
+
+            public IReadOnlyList<KeyMeta> GetAll() => _metas;
+            public KeyMeta? Get(string key) => _metas.Find(m => m.Key == key);
+            public void Clear() => _metas.Clear();
+        }
 
         private sealed class StubRegistry<T> : IExtensionRegistry<T> where T : class, IExtension
         {
