@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Collections.Generic;
 
 namespace HarmonyLib
 {
@@ -17,13 +18,16 @@ namespace Verse
         public static void Error(string msg) { }
     }
 
-    public class Pawn { }
+    public class Pawn
+    {
+        public int thingIDNumber;
+    }
 
     public static class Find
     {
         public static TickManager TickManager = new TickManager();
-        public static WorldPawns WorldPawns = new WorldPawns();
-        public static CurrentMapHolder CurrentMap = null;
+        public static WorldPawnsHolder WorldPawns = new WorldPawnsHolder();
+        public static MapHolder? CurrentMap = null;
     }
 
     public class TickManager
@@ -31,20 +35,9 @@ namespace Verse
         public int TicksGame = 100000;
     }
 
-    public class WorldPawns
+    public class WorldPawnsHolder
     {
-        public PawnList AllPawnsAlive = new PawnList();
-    }
-
-    public class PawnList
-    {
-        private readonly System.Collections.Generic.List<Pawn> _pawns = new System.Collections.Generic.List<Pawn>();
-        public System.Collections.Generic.List<Pawn> ToList() => _pawns;
-    }
-
-    public class CurrentMapHolder
-    {
-        public MapHolder? Value;
+        public List<Pawn> AllPawnsAlive = new List<Pawn>();
     }
 
     public class MapHolder
@@ -54,7 +47,7 @@ namespace Verse
 
     public class MapPawnsHolder
     {
-        public PawnList FreeColonists = new PawnList();
+        public List<Pawn> FreeColonists = new List<Pawn>();
     }
 
     public static class Scribe_Values
@@ -73,6 +66,7 @@ namespace RimMind.Bridge.RimChat.Detection
 {
     public static class RimChatDetector
     {
+        public const string RimChatPackageId = "yancy.rimchat";
         public static bool IsRimChatApiAvailable { get; set; }
         public static bool IsRimChatActive { get; set; }
     }
@@ -133,6 +127,80 @@ namespace RimMind.Application.Common.Interfaces.Extension
 namespace UnityEngine
 {
     public struct Rect { public float x, y, width, height; public Rect(float x, float y, float w, float h) { this.x = x; this.y = y; width = w; height = h; } }
+}
+
+// ── Application 层接口桩（ContextPullBridge 依赖）──
+namespace RimMind.Application.Common.Interfaces.Context
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using RimMind.Domain.ValueObjects;
+
+    /// <summary>
+    /// 异步上下文 Provider 定义（桩，与源码签名一致）
+    /// </summary>
+    public sealed class ContextProviderDef
+    {
+        public string Key { get; }
+        public ContextLayer Layer { get; }
+        public float Priority { get; }
+        public string? OwnerMod { get; }
+        public Func<ProviderContext, CancellationToken, Task<string?>> Provider { get; }
+        public int StalenessTicks { get; }
+        public IReadOnlyList<string>? InvalidationTriggers { get; }
+
+        public ContextProviderDef(
+            string key,
+            ContextLayer layer,
+            float priority,
+            Func<ProviderContext, CancellationToken, Task<string?>> provider,
+            string? ownerMod = null,
+            int stalenessTicks = 0,
+            IReadOnlyList<string>? invalidationTriggers = null)
+        {
+            Key = key ?? throw new ArgumentNullException(nameof(key));
+            Layer = layer;
+            Priority = priority;
+            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            OwnerMod = ownerMod;
+            StalenessTicks = stalenessTicks;
+            InvalidationTriggers = invalidationTriggers;
+        }
+    }
+
+    /// <summary>
+    /// 上下文 Provider 参数（桩）
+    /// </summary>
+    public sealed record ProviderContext
+    {
+        public string Scenario { get; init; }
+        public string TraceId { get; init; }
+        public int PawnId { get; init; }
+        public string? NpcId { get; init; }
+        public int? MapId { get; init; }
+        public IReadOnlyDictionary<string, object?>? Hints { get; init; }
+
+        public ProviderContext(string scenario, string traceId)
+        {
+            Scenario = scenario ?? throw new ArgumentNullException(nameof(scenario));
+            TraceId = traceId ?? throw new ArgumentNullException(nameof(traceId));
+        }
+    }
+
+    /// <summary>
+    /// 上下文 Key 注册表接口（桩）
+    /// </summary>
+    public interface IContextKeyRegistry
+    {
+        void Register(KeyMeta meta);
+        void Register(ContextProviderDef def);
+        bool Unregister(string key);
+        IReadOnlyList<KeyMeta> GetAll();
+        KeyMeta? Get(string key);
+        void Clear();
+    }
 }
 
 namespace RimMind.Presentation
