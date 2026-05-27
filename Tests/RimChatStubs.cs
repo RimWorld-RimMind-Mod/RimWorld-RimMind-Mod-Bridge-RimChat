@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace HarmonyLib
 {
     public static class AccessTools
