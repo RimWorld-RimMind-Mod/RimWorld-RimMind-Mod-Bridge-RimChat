@@ -22,6 +22,7 @@
     <li>
       <packageId>yancy.rimchat</packageId>
       <displayName>RimChat</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3683001105</steamWorkshopUrl>
     </li>
   </modDependencies>
   <loadAfter>
