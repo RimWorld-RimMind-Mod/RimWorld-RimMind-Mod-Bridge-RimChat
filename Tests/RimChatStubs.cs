@@ -203,7 +203,7 @@ namespace RimMind.Application.Common.Interfaces.Context
     }
 }
 
-namespace RimMind.Presentation
+namespace RimMind.Application.Api
 {
     using RimMind.Application.Common.Interfaces.Extension;
     using RimMind.Application.Common.Interfaces.Context;

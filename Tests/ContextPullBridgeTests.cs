@@ -16,9 +16,9 @@ namespace RimMind.Bridge.RimChat.Tests
             RimChatDetector.IsRimChatActive = false;
             RimChatDetector.IsRimChatApiAvailable = false;
             BridgeRimChatSettings.Reset();
-            RimMind.Presentation.RimMindAPI.ResetCounts();
+            RimMind.Application.Api.RimMindAPI.ResetCounts();
             // 清除 StubContextKeyRegistry 中的残留数据
-            RimMind.Presentation.RimMindAPI.Context.ContextKeys.Clear();
+            RimMind.Application.Api.RimMindAPI.Context.ContextKeys.Clear();
         }
 
         // ── Truncate 辅助方法测试（通过反射访问 private static 方法）──
@@ -73,7 +73,7 @@ namespace RimMind.Bridge.RimChat.Tests
         {
             RimChatDetector.IsRimChatActive = false;
             ContextPullBridge.Register();
-            Assert.Equal(0, RimMind.Presentation.RimMindAPI.ContextRegisterCount);
+            Assert.Equal(0, RimMind.Application.Api.RimMindAPI.ContextRegisterCount);
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace RimMind.Bridge.RimChat.Tests
 
             ContextPullBridge.Register();
             // 应注册 rimchat_diplomacy 和 rimchat_rpg_history 两个provider
-            Assert.Equal(2, RimMind.Presentation.RimMindAPI.ContextRegisterCount);
+            Assert.Equal(2, RimMind.Application.Api.RimMindAPI.ContextRegisterCount);
         }
 
         [Fact]
@@ -98,7 +98,7 @@ namespace RimMind.Bridge.RimChat.Tests
             settings.enableContextPull = false;
 
             ContextPullBridge.Register();
-            Assert.Equal(0, RimMind.Presentation.RimMindAPI.ContextRegisterCount);
+            Assert.Equal(0, RimMind.Application.Api.RimMindAPI.ContextRegisterCount);
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace RimMind.Bridge.RimChat.Tests
             settings.pullRpgHistory = false;
 
             ContextPullBridge.Register();
-            Assert.Equal(1, RimMind.Presentation.RimMindAPI.ContextRegisterCount);
+            Assert.Equal(1, RimMind.Application.Api.RimMindAPI.ContextRegisterCount);
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace RimMind.Bridge.RimChat.Tests
             settings.pullRpgHistory = true;
 
             ContextPullBridge.Register();
-            Assert.Equal(1, RimMind.Presentation.RimMindAPI.ContextRegisterCount);
+            Assert.Equal(1, RimMind.Application.Api.RimMindAPI.ContextRegisterCount);
         }
 
         // ── Unregister 逻辑测试 ──
@@ -139,10 +139,10 @@ namespace RimMind.Bridge.RimChat.Tests
             settings.pullRpgHistory = true;
 
             ContextPullBridge.Register();
-            Assert.Equal(2, RimMind.Presentation.RimMindAPI.ContextRegisterCount);
+            Assert.Equal(2, RimMind.Application.Api.RimMindAPI.ContextRegisterCount);
 
             ContextPullBridge.Unregister();
-            Assert.Equal(2, RimMind.Presentation.RimMindAPI.ContextUnregisterCount);
+            Assert.Equal(2, RimMind.Application.Api.RimMindAPI.ContextUnregisterCount);
         }
 
         // ── Refresh 逻辑测试 ──
@@ -157,14 +157,14 @@ namespace RimMind.Bridge.RimChat.Tests
             settings.pullRpgHistory = false;
 
             ContextPullBridge.Register();
-            Assert.Equal(1, RimMind.Presentation.RimMindAPI.ContextRegisterCount);
+            Assert.Equal(1, RimMind.Application.Api.RimMindAPI.ContextRegisterCount);
 
-            RimMind.Presentation.RimMindAPI.ResetCounts();
+            RimMind.Application.Api.RimMindAPI.ResetCounts();
 
             // Refresh = Unregister + Register
             ContextPullBridge.Refresh();
-            Assert.Equal(1, RimMind.Presentation.RimMindAPI.ContextUnregisterCount);
-            Assert.Equal(1, RimMind.Presentation.RimMindAPI.ContextRegisterCount);
+            Assert.Equal(1, RimMind.Application.Api.RimMindAPI.ContextUnregisterCount);
+            Assert.Equal(1, RimMind.Application.Api.RimMindAPI.ContextRegisterCount);
         }
 
         /// <summary>
