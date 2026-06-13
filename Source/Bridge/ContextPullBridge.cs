@@ -9,7 +9,7 @@ using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Application.Common.Interfaces.Context;
 using RimMind.Domain.ValueObjects;
-using RimMind.Application.Api;
+using RimMind.Presentation.Api;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge

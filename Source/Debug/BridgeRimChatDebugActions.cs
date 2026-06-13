@@ -5,7 +5,7 @@ using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Domain.ValueObjects;
-using RimMind.Application.Api;
+using RimMind.Presentation.Api;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Debug

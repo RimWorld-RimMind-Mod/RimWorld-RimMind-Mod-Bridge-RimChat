@@ -2,7 +2,7 @@ using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Application.Common.Interfaces.Extension;
-using RimMind.Application.Api;
+using RimMind.Presentation.Api;
 using RimMind.Presentation.Settings;
 using Verse;
 
