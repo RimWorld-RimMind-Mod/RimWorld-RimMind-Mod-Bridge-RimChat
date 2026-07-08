@@ -21,6 +21,7 @@
     <Compile Include="../Source/Bridge/ActionGate.cs" />
     <Compile Include="../Source/Bridge/ContextPullBridge.cs" />
     <Compile Include="../Source/Cooldown/SharedIncidentCooldown.cs" />
+    <Compile Include="../Source/Cooldown/GameComponent_BridgeRimChat.cs" />
     <Compile Include="../Source/Extensions/RimChatIncidentExecutedListener.cs" />
     <Compile Include="../Source/Extensions/RimChatActionSkipCheck.cs" />
     <Compile Include="../Source/Extensions/RimChatDialogueSkipCheck.cs" />

@@ -61,6 +61,14 @@ namespace Verse
         public void Write() { }
     }
 
+    public class Game { }
+
+    public class GameComponent
+    {
+        public GameComponent() { }
+        public virtual void ExposeData() { }
+    }
+
     public class ModContentPack { }
 
     public class Mod

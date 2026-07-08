@@ -1,5 +1,4 @@
 using RimMind.Bridge.RimChat.Bridge;
-using RimMind.Bridge.RimChat.Cooldown;
 using RimMind.Presentation.UI;
 using UnityEngine;
 using Verse;
@@ -54,8 +53,6 @@ namespace RimMind.Bridge.RimChat.Settings
             Scribe_Values.Look(ref enableContextPull, "enableContextPull", true);
             Scribe_Values.Look(ref pullDiplomacyHistory, "pullDiplomacyHistory", true);
             Scribe_Values.Look(ref pullRpgHistory, "pullRpgHistory", false);
-
-            SharedIncidentCooldown.ExposeData();
         }
 
         private static Vector2 _scrollPos = Vector2.zero;
