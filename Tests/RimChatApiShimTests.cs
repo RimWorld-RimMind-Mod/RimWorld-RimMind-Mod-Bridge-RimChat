@@ -104,6 +104,13 @@ namespace RimMind.Bridge.RimChat.Tests
             Assert.Null(result);
         }
 
+        [Fact]
+        public void GetInstanceFieldValue_NullInstance_ReturnsNull()
+        {
+            var result = RimChatApiShim.GetInstanceFieldValue(null!, "AnyField");
+            Assert.Null(result);
+        }
+
         private class TestClass
         {
             public static string StaticProp => "hello";

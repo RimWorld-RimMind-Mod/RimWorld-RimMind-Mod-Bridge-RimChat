@@ -83,6 +83,12 @@ namespace RimMind.Bridge.RimChat.Bridge
         public static object? GetInstanceFieldValue(object instance, string fieldName,
             BindingFlags flags = BindingFlags.Public | BindingFlags.Instance)
         {
+            if (instance == null)
+            {
+                RimMindErrors.Warn("[RimMind-Bridge-RimChat] GetInstanceFieldValue: instance is null.");
+                return null;
+            }
+
             try
             {
                 var field = instance.GetType().GetField(fieldName, flags);
