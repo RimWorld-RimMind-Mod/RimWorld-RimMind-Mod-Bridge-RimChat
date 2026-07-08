@@ -105,5 +105,27 @@ namespace RimMind.Bridge.RimChat.Bridge
                 return null;
             }
         }
+
+        /// <summary>
+        /// 获取 RimChat manager 的单例实例（反射读取静态 "Instance" 属性）。
+        /// 统一 BuildDiplomacyContext / BuildRpgContext 的 manager 获取逻辑。
+        /// </summary>
+        public static object? TryGetManagerInstance(Type? managerType, string instancePropertyName = "Instance")
+        {
+            if (managerType == null)
+            {
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] TryGetManagerInstance: managerType is null.");
+                return null;
+            }
+
+            var instance = GetStaticPropertyValue(managerType, instancePropertyName);
+            if (instance == null)
+            {
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] TryGetManagerInstance: instance is null on {managerType.Name}.");
+                return null;
+            }
+
+            return instance;
+        }
     }
 }

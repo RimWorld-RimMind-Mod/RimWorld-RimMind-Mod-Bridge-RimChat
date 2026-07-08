@@ -111,6 +111,29 @@ namespace RimMind.Bridge.RimChat.Tests
             Assert.Null(result);
         }
 
+        [Fact]
+        public void TryGetManagerInstance_方法存在()
+        {
+            var method = typeof(RimChatApiShim).GetMethod("TryGetManagerInstance",
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+        }
+
+        [Fact]
+        public void TryGetManagerInstance_NullType_ReturnsNull()
+        {
+            var result = RimChatApiShim.TryGetManagerInstance(null!);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void TryGetManagerInstance_ValidType_ReturnsNull_当Instance属性不存在()
+        {
+            var type = typeof(TestClass);
+            var result = RimChatApiShim.TryGetManagerInstance(type, "Instance");
+            Assert.Null(result);
+        }
+
         private class TestClass
         {
             public static string StaticProp => "hello";
