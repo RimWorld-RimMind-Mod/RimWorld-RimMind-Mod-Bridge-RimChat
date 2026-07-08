@@ -16,9 +16,7 @@ namespace RimMind.Bridge.RimChat.Bridge
             {
                 "Chitchat" => settings.enableChitchatGate,
                 "Auto" => settings.enableAutoGate,
-                "PlayerInput" => settings.enablePlayerInputGate
-                    && settings.skipPlayerDialogue
-                    && !settings.forceRimMindPlayerDialogue,
+                "PlayerInput" => ShouldSkipPlayerInput(settings),
                 _ => false
             };
         }
@@ -26,12 +24,12 @@ namespace RimMind.Bridge.RimChat.Bridge
         public static bool ShouldSkipFloatMenuOption()
         {
             if (!RimChatDetector.IsRimChatActive) return false;
+            return ShouldSkipPlayerInput(BridgeRimChatSettings.Get());
+        }
 
-            var settings = BridgeRimChatSettings.Get();
-
-            return settings.enablePlayerInputGate
+        private static bool ShouldSkipPlayerInput(BridgeRimChatSettings settings)
+            => settings.enablePlayerInputGate
                 && settings.skipPlayerDialogue
                 && !settings.forceRimMindPlayerDialogue;
-        }
     }
 }
