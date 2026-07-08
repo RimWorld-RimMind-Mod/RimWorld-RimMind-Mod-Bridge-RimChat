@@ -167,7 +167,12 @@ namespace RimMind.Application.Common.Interfaces.Extension
     public interface IDialogueTrigger : IExtension { void Trigger(Verse.Pawn pawn, string context, Verse.Pawn? recipient); }
     public interface IModCooldown : IExtension { int CooldownTicks { get; } }
     public enum SkipCheckKind { Dialogue, FloatMenu, Action, StorytellerIncident }
-    public readonly struct SkipCheckArgs { public readonly Verse.Pawn? Pawn; public readonly string? Trigger; public readonly string? IntentId; }
+    public readonly struct SkipCheckArgs
+    {
+        public object? Pawn { get; init; }
+        public string? Trigger { get; init; }
+        public string? IntentId { get; init; }
+    }
     public interface ISkipCheck : IExtension { SkipCheckKind Kind { get; } bool ShouldSkip(in SkipCheckArgs args); }
     public interface IIncidentExecutedListener : IExtension { void OnIncidentExecuted(); }
 }
