@@ -55,6 +55,31 @@ namespace RimMind.Bridge.RimChat.Settings
             Scribe_Values.Look(ref pullRpgHistory, "pullRpgHistory", false);
         }
 
+        /// <summary>
+        /// 将所有字段重置为默认值。字段初始化器与"恢复默认"按钮共用此方法，
+        /// 避免默认值变更需要在两处同步。
+        /// </summary>
+        public void ApplyDefaults()
+        {
+            enablePlayerInputGate = true;
+            enableChitchatGate = true;
+            enableAutoGate = true;
+            skipPlayerDialogue = true;
+            forceRimMindPlayerDialogue = false;
+
+            enableActionGate = true;
+            skipDiplomacyActions = true;
+            skipTriggerIncident = true;
+            skipSocialActions = false;
+            skipRecruitAgree = false;
+            incidentCooldownTicks = 60000;
+            forceRimMindActions = false;
+
+            enableContextPull = true;
+            pullDiplomacyHistory = true;
+            pullRpgHistory = false;
+        }
+
         private static Vector2 _scrollPos = Vector2.zero;
 
         public static void DrawSettingsContent(Rect inRect)
@@ -149,21 +174,7 @@ namespace RimMind.Bridge.RimChat.Settings
 
             SettingsUIDrawer.DrawBottomBar(bottomBar, () =>
             {
-                s.enablePlayerInputGate = true;
-                s.enableChitchatGate = true;
-                s.enableAutoGate = true;
-                s.skipPlayerDialogue = true;
-                s.forceRimMindPlayerDialogue = false;
-                s.enableActionGate = true;
-                s.skipDiplomacyActions = true;
-                s.skipTriggerIncident = true;
-                s.skipSocialActions = false;
-                s.skipRecruitAgree = false;
-                s.incidentCooldownTicks = 60000;
-                s.forceRimMindActions = false;
-                s.enableContextPull = true;
-                s.pullDiplomacyHistory = true;
-                s.pullRpgHistory = false;
+                s.ApplyDefaults();
             });
 
             if (s.enableContextPull != oldEnableContextPull

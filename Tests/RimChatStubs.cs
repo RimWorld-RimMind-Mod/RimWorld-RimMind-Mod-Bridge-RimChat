@@ -122,6 +122,27 @@ namespace RimMind.Bridge.RimChat.Settings
 
         public static void Reset() { _instance = null; }
 
+        public void ApplyDefaults()
+        {
+            enablePlayerInputGate = true;
+            enableChitchatGate = true;
+            enableAutoGate = true;
+            skipPlayerDialogue = true;
+            forceRimMindPlayerDialogue = false;
+
+            enableActionGate = true;
+            skipDiplomacyActions = true;
+            skipTriggerIncident = true;
+            skipSocialActions = false;
+            skipRecruitAgree = false;
+            incidentCooldownTicks = 60000;
+            forceRimMindActions = false;
+
+            enableContextPull = true;
+            pullDiplomacyHistory = true;
+            pullRpgHistory = false;
+        }
+
         public static void DrawSettingsContent(UnityEngine.Rect rect) { }
     }
 }
