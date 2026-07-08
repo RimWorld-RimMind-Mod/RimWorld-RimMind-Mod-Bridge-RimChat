@@ -20,6 +20,11 @@ namespace RimMind.Bridge.RimChat.Bridge
             "romance_breakup",
         };
 
+        private static readonly HashSet<string> RecruitActions = new HashSet<string>
+        {
+            "recruit_agree",
+        };
+
         public static bool ShouldSkipAction(string intentId)
         {
             if (!RimChatDetector.IsRimChatActive) return false;
@@ -34,7 +39,7 @@ namespace RimMind.Bridge.RimChat.Bridge
             if (settings.skipSocialActions && SocialActions.Contains(intentId))
                 return true;
 
-            if (settings.skipRecruitAgree && intentId == "recruit_agree")
+            if (settings.skipRecruitAgree && RecruitActions.Contains(intentId))
                 return true;
 
             return false;
