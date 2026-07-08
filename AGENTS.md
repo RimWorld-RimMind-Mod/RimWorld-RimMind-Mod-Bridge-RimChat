@@ -61,7 +61,7 @@ ShouldSkipStorytellerIncident:
   enableActionGate && skipTriggerIncident && SharedIncidentCooldown.IsOnCooldown → true
 ```
 
-## Provider注册 (ModId: `"RimMind.BridgeRimChat"`)
+## Provider注册 (ModId: `"RimMindBridgeRimChat"`)
 
 | Category | 数据来源 | 类型 | 设置开关 |
 |----------|---------|------|---------|

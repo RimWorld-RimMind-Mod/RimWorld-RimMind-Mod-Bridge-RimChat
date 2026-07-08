@@ -21,6 +21,13 @@
     <Compile Include="../Source/Bridge/ActionGate.cs" />
     <Compile Include="../Source/Bridge/ContextPullBridge.cs" />
     <Compile Include="../Source/Cooldown/SharedIncidentCooldown.cs" />
+    <Compile Include="../Source/Extensions/RimChatIncidentExecutedListener.cs" />
+    <Compile Include="../Source/Extensions/RimChatActionSkipCheck.cs" />
+    <Compile Include="../Source/Extensions/RimChatDialogueSkipCheck.cs" />
+    <Compile Include="../Source/Extensions/RimChatFloatMenuSkipCheck.cs" />
+    <Compile Include="../Source/Extensions/RimChatStorytellerIncidentSkipCheck.cs" />
+    <Compile Include="../Source/Extensions/RimChatSettingsTab.cs" />
+    <Compile Include="../Source/RimMindBridgeRimChatMod.cs" />
   </ItemGroup>
 
   <ItemGroup>

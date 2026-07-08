@@ -5,7 +5,7 @@ namespace RimMind.Bridge.RimChat
     internal sealed class RimChatIncidentExecutedListener : IIncidentExecutedListener
     {
         public string Id => "rimchat_bridge_incident";
-        public string OwnerModId => "RimMind.BridgeRimChat";
+        public string OwnerModId => "RimMindBridgeRimChat";
         public void OnIncidentExecuted() => Cooldown.SharedIncidentCooldown.RecordIncident();
     }
 }

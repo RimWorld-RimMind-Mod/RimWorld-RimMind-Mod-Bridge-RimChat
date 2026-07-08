@@ -16,7 +16,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 {
     public static class ContextPullBridge
     {
-        private const string ModId = "RimMind.BridgeRimChat";
+        private const string ModId = "RimMindBridgeRimChat";
 
         public static void Register()
         {

@@ -60,6 +60,20 @@ namespace Verse
         public virtual void ExposeData() { }
         public void Write() { }
     }
+
+    public class ModContentPack { }
+
+    public class Mod
+    {
+        public Mod(ModContentPack content) { }
+        public virtual string SettingsCategory() => "";
+        public T GetSettings<T>() where T : ModSettings, new() => new T();
+    }
+
+    public static class StringTranslateExtensions
+    {
+        public static string Translate(this string s) => s;
+    }
 }
 
 namespace RimMind.Bridge.RimChat.Detection
@@ -100,6 +114,8 @@ namespace RimMind.Bridge.RimChat.Settings
         public BridgeRimChatSettings() { _instance = this; }
 
         public static void Reset() { _instance = null; }
+
+        public static void DrawSettingsContent(UnityEngine.Rect rect) { }
     }
 }
 
@@ -114,7 +130,7 @@ namespace RimMind.Application.Common.Interfaces.Extension
         System.Collections.Generic.IReadOnlyList<T> All { get; }
         T? FindById(string id);
     }
-    public interface ISettingsTab : IExtension { string Label { get; } void Draw(UnityEngine.Rect rect); }
+    // ISettingsTab 真实定义在 RimMind.Presentation.Settings（见文件末尾），此处不再重复定义以避免命名冲突。
     public interface IToggleBehavior : IExtension { bool IsActive { get; } void Toggle(); }
     public interface IDialogueTrigger : IExtension { void Trigger(Verse.Pawn pawn, string context, Verse.Pawn? recipient); }
     public interface IModCooldown : IExtension { int CooldownTicks { get; } }
@@ -277,5 +293,18 @@ namespace RimMind.Presentation.Api
             public IReadOnlyList<T> All => _items;
             public T? FindById(string id) => _items.Find(x => x.Id == id);
         }
+    }
+}
+
+// ISettingsTab 真实定义在 RimMind.Presentation.Settings（Core 的 Presentation 层），
+// 此处按真实命名空间提供桩，供 RimChatSettingsTab 编译。
+namespace RimMind.Presentation.Settings
+{
+    using RimMind.Application.Common.Interfaces.Extension;
+
+    public interface ISettingsTab : IExtension
+    {
+        string Label { get; }
+        void Draw(UnityEngine.Rect rect);
     }
 }
