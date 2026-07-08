@@ -31,9 +31,8 @@ namespace RimMind.Bridge.RimChat.Tests
         [Fact]
         public void RimChatDialogueSkipCheck_OwnerModId_一致()
         {
-            // RimChatDialogueSkipCheck 构造函数需要 RimMindBridgeRimChatMod 参数，
-            // 但 OwnerModId 不依赖该实例，传 null! 仅用于读取 OwnerModId。
-            var check = new RimChatDialogueSkipCheck(null!);
+            // RimChatDialogueSkipCheck 构造函数已改为无参（_mod 字段已作为死代码删除）。
+            var check = new RimChatDialogueSkipCheck();
             Assert.Equal(ExpectedModId, check.OwnerModId);
         }
 

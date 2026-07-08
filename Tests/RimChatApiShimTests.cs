@@ -10,7 +10,6 @@ namespace RimMind.Bridge.RimChat.Tests
     {
         public RimChatApiShimTests()
         {
-            RimChatDetector.IsRimChatApiAvailable = false;
             RimChatDetector.IsRimChatActive = false;
         }
 
@@ -33,16 +32,6 @@ namespace RimMind.Bridge.RimChat.Tests
         {
             var result = RimChatApiShim.RpgArchiveManagerType;
             Assert.Null(result);
-        }
-
-        [Fact]
-        public void IsAvailable_DelegatesToDetector()
-        {
-            RimChatDetector.IsRimChatApiAvailable = false;
-            Assert.False(RimChatApiShim.IsAvailable);
-
-            RimChatDetector.IsRimChatApiAvailable = true;
-            Assert.True(RimChatApiShim.IsAvailable);
         }
 
         [Fact]

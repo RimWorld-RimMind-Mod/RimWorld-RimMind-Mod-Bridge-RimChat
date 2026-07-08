@@ -22,7 +22,7 @@ namespace RimMind.Bridge.RimChat
                 return;
             }
 
-            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatDialogueSkipCheck(this));
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatDialogueSkipCheck());
             RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatFloatMenuSkipCheck());
             Log.Message("[RimMind-Bridge-RimChat] DialogueGate registered.");
 

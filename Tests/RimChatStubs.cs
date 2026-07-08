@@ -89,7 +89,6 @@ namespace RimMind.Bridge.RimChat.Detection
     public static class RimChatDetector
     {
         public const string RimChatPackageId = "yancy.rimchat";
-        public static bool IsRimChatApiAvailable { get; set; }
         public static bool IsRimChatActive { get; set; }
     }
 }

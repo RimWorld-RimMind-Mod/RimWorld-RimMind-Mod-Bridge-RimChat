@@ -4,8 +4,6 @@ namespace RimMind.Bridge.RimChat
 {
     internal sealed class RimChatDialogueSkipCheck : ISkipCheck
     {
-        private readonly RimMindBridgeRimChatMod _mod;
-        public RimChatDialogueSkipCheck(RimMindBridgeRimChatMod mod) { _mod = mod; }
         public string Id => "rimchat_bridge_dialogue";
         public string OwnerModId => "RimMindBridgeRimChat";
         public SkipCheckKind Kind => SkipCheckKind.Dialogue;

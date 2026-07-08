@@ -1,7 +1,6 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
-using RimMind.Bridge.RimChat.Detection;
 using RimMind.Domain.ValueObjects;
 using Verse;
 
@@ -17,8 +16,6 @@ namespace RimMind.Bridge.RimChat.Bridge
         private static Type? _diplomacyManagerType;
         private static Type? _rpgArchiveManagerType;
         private static bool _resolved;
-
-        public static bool IsAvailable => RimChatDetector.IsRimChatApiAvailable;
 
         private static void EnsureResolved()
         {

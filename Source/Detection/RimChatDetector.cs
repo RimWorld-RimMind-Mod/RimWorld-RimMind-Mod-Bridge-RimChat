@@ -7,21 +7,5 @@ namespace RimMind.Bridge.RimChat.Detection
         public const string RimChatPackageId = "yancy.rimchat";
 
         public static bool IsRimChatActive => ModsConfig.IsActive(RimChatPackageId);
-
-        private static bool? _apiAvailable;
-        private static bool _apiChecked;
-
-        public static bool IsRimChatApiAvailable
-        {
-            get
-            {
-                if (!_apiChecked)
-                {
-                    _apiAvailable = IsRimChatActive && Bridge.RimChatApiShim.ApiType != null;
-                    _apiChecked = true;
-                }
-                return _apiAvailable ?? false;
-            }
-        }
     }
 }

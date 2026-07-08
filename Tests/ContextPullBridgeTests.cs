@@ -14,7 +14,6 @@ namespace RimMind.Bridge.RimChat.Tests
         public ContextPullBridgeTests()
         {
             RimChatDetector.IsRimChatActive = false;
-            RimChatDetector.IsRimChatApiAvailable = false;
             BridgeRimChatSettings.Reset();
             RimMind.Presentation.Api.RimMindAPI.ResetCounts();
             // 清除 StubContextKeyRegistry 中的残留数据
