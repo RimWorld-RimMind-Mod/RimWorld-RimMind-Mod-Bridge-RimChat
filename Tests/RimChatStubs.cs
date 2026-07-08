@@ -28,6 +28,10 @@ namespace Verse
         public static TickManager TickManager = new TickManager();
         public static WorldPawnsHolder WorldPawns = new WorldPawnsHolder();
         public static MapHolder? CurrentMap = null;
+        /// <summary>
+        /// 所有已加载地图。测试环境默认空列表，源码中 TryFindPawnById 会遍历此列表。
+        /// </summary>
+        public static List<MapHolder> Maps = new List<MapHolder>();
     }
 
     public class TickManager
