@@ -303,7 +303,7 @@ namespace RimMind.Presentation.Api
             {
                 // 用 ContextProviderDef 的信息构造 KeyMeta
                 var meta = new KeyMeta(def.Key, def.Layer, def.Priority,
-                    _ => new List<ContextEntry>(), def.OwnerMod);
+                    _ => new List<ContextEntry>(), def.OwnerMod ?? string.Empty);
                 meta.Def = def;
                 _metas.Add(meta);
                 RimMindAPI.ContextRegisterCount++;

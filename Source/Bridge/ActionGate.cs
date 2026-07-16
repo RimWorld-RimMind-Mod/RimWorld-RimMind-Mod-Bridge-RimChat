@@ -25,8 +25,9 @@ namespace RimMind.Bridge.RimChat.Bridge
             "recruit_agree",
         };
 
-        public static bool ShouldSkipAction(string intentId)
+        public static bool ShouldSkipAction(string? intentId)
         {
+            if (intentId is null || intentId.Length == 0) return false;
             if (!RimChatDetector.IsRimChatActive) return false;
 
             var settings = BridgeRimChatSettings.Get();

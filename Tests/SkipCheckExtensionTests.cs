@@ -52,6 +52,19 @@ namespace RimMind.Bridge.RimChat.Tests
             Assert.True(ext.ShouldSkip(in args));
         }
 
+        [Fact]
+        public void RimChatActionSkipCheck_IntentId为空_不跳过()
+        {
+            RimChatDetector.IsRimChatActive = true;
+            var s = BridgeRimChatSettings.Get();
+            s.enableActionGate = true;
+            s.skipDiplomacyActions = true;
+            var ext = new RimChatActionSkipCheck();
+            var args = new SkipCheckArgs { IntentId = null };
+
+            Assert.False(ext.ShouldSkip(in args));
+        }
+
         // ── RimChatDialogueSkipCheck ──
 
         [Fact]

@@ -80,6 +80,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     {
                         if (msgCount >= 4) break;
                         var msg = messages[i];
+                        if (msg == null) continue;
                         var senderField = msg.GetType().GetField("sender",
                             BindingFlags.Public | BindingFlags.Instance);
                         var messageField = msg.GetType().GetField("message",
@@ -91,7 +92,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 
                         string sender = senderField.GetValue(msg)?.ToString() ?? "?";
                         string content = messageField.GetValue(msg)?.ToString() ?? "";
-                        bool isPlayer = isPlayerField != null && (bool)isPlayerField.GetValue(msg);
+                        bool isPlayer = isPlayerField?.GetValue(msg) is bool playerMessage && playerMessage;
 
                         if (string.IsNullOrEmpty(content)) continue;
                         string label = isPlayer ? "Player" : sender;
@@ -159,14 +160,20 @@ namespace RimMind.Bridge.RimChat.Bridge
                 object? archive = null;
                 foreach (DictionaryEntry entry in cache)
                 {
-                    var pawnLoadIdField = entry.Value.GetType().GetField("PawnLoadId",
+                    var archiveCandidate = entry.Value;
+                    if (archiveCandidate == null) continue;
+
+                    var pawnLoadIdField = archiveCandidate.GetType().GetField("PawnLoadId",
                         BindingFlags.Public | BindingFlags.Instance);
                     if (pawnLoadIdField != null)
                     {
-                        int archivePawnId = System.Convert.ToInt32(pawnLoadIdField.GetValue(entry.Value));
+                        var archivePawnIdValue = pawnLoadIdField.GetValue(archiveCandidate);
+                        if (archivePawnIdValue == null) continue;
+
+                        int archivePawnId = System.Convert.ToInt32(archivePawnIdValue);
                         if (archivePawnId == pawn.thingIDNumber)
                         {
-                            archive = entry.Value;
+                            archive = archiveCandidate;
                             break;
                         }
                     }
@@ -188,6 +195,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     if (sessionCount >= 2) break;
 
                     var session = sessions[si];
+                    if (session == null) continue;
                     var turnsField = session.GetType().GetField("Turns",
                         BindingFlags.Public | BindingFlags.Instance);
                     if (turnsField == null) continue;
@@ -201,6 +209,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     {
                         if (turnCount >= 4) break;
                         var turn = turns[ti];
+                        if (turn == null) continue;
 
                         var isPlayerField = turn.GetType().GetField("IsPlayer",
                             BindingFlags.Public | BindingFlags.Instance);
@@ -211,7 +220,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 
                         if (textField == null) continue;
 
-                        bool isPlayer = isPlayerField != null && (bool)isPlayerField.GetValue(turn);
+                        bool isPlayer = isPlayerField?.GetValue(turn) is bool playerTurn && playerTurn;
                         string speaker = speakerField?.GetValue(turn)?.ToString() ?? "?";
                         string text = textField.GetValue(turn)?.ToString() ?? "";
 

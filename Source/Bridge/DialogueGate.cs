@@ -6,7 +6,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 {
     public static class DialogueGate
     {
-        public static bool ShouldSkipDialogue(Pawn pawn, string triggerType)
+        public static bool ShouldSkipDialogue(Pawn? pawn, string? triggerType)
         {
             if (!RimChatDetector.IsRimChatActive) return false;
 
