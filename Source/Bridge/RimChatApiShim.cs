@@ -17,6 +17,17 @@ namespace RimMind.Bridge.RimChat.Bridge
         private static Type? _rpgArchiveManagerType;
         private static bool _resolved;
 
+        internal static void ConfigureTypesForTesting(
+            Type? apiType,
+            Type? diplomacyManagerType,
+            Type? rpgArchiveManagerType)
+        {
+            _apiType = apiType;
+            _diplomacyManagerType = diplomacyManagerType;
+            _rpgArchiveManagerType = rpgArchiveManagerType;
+            _resolved = true;
+        }
+
         private static void EnsureResolved()
         {
             if (_resolved) return;

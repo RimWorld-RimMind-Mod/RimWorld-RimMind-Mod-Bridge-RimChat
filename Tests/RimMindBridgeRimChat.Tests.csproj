@@ -7,6 +7,7 @@
     <AssemblyName>RimMindBridgeRimChat.Tests</AssemblyName>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,10 +17,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="RimChatStubs.cs" />
+    <Compile Include="Contracts\**\*.cs" />
+    <Compile Include="..\..\RimMind-Core\TestSupport\ContractCaseRunner.cs"
+             Link="Support\ContractCaseRunner.cs" />
     <Compile Include="../Source/Bridge/RimChatApiShim.cs" />
     <Compile Include="../Source/Bridge/DialogueGate.cs" />
     <Compile Include="../Source/Bridge/ActionGate.cs" />
     <Compile Include="../Source/Bridge/ContextPullBridge.cs" />
+    <Compile Include="../Source/Detection/RimChatDetector.cs" />
+    <Compile Include="../Source/Settings/BridgeRimChatSettings.State.cs" />
     <Compile Include="../Source/Cooldown/SharedIncidentCooldown.cs" />
     <Compile Include="../Source/Cooldown/GameComponent_BridgeRimChat.cs" />
     <Compile Include="../Source/Extensions/RimChatIncidentExecutedListener.cs" />

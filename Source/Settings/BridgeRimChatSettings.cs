@@ -5,34 +5,8 @@ using Verse;
 
 namespace RimMind.Bridge.RimChat.Settings
 {
-    public class BridgeRimChatSettings : ModSettings
+    public partial class BridgeRimChatSettings : ModSettings
     {
-        public bool enablePlayerInputGate = true;
-        public bool enableChitchatGate = true;
-        public bool enableAutoGate = true;
-        public bool skipPlayerDialogue = true;
-        public bool forceRimMindPlayerDialogue = false;
-
-        public bool enableActionGate = true;
-        public bool skipDiplomacyActions = true;
-        public bool skipTriggerIncident = true;
-        public bool skipSocialActions = false;
-        public bool skipRecruitAgree = false;
-        public int incidentCooldownTicks = 60000;
-        public bool forceRimMindActions = false;
-
-        public bool enableContextPull = true;
-        public bool pullDiplomacyHistory = true;
-        public bool pullRpgHistory = false;
-
-        private static BridgeRimChatSettings? _instance;
-        public static BridgeRimChatSettings Get() => _instance ?? new BridgeRimChatSettings();
-
-        public BridgeRimChatSettings()
-        {
-            _instance = this;
-        }
-
         public override void ExposeData()
         {
             base.ExposeData();
@@ -53,31 +27,6 @@ namespace RimMind.Bridge.RimChat.Settings
             Scribe_Values.Look(ref enableContextPull, "enableContextPull", true);
             Scribe_Values.Look(ref pullDiplomacyHistory, "pullDiplomacyHistory", true);
             Scribe_Values.Look(ref pullRpgHistory, "pullRpgHistory", false);
-        }
-
-        /// <summary>
-        /// 将所有字段重置为默认值。字段初始化器与"恢复默认"按钮共用此方法，
-        /// 避免默认值变更需要在两处同步。
-        /// </summary>
-        public void ApplyDefaults()
-        {
-            enablePlayerInputGate = true;
-            enableChitchatGate = true;
-            enableAutoGate = true;
-            skipPlayerDialogue = true;
-            forceRimMindPlayerDialogue = false;
-
-            enableActionGate = true;
-            skipDiplomacyActions = true;
-            skipTriggerIncident = true;
-            skipSocialActions = false;
-            skipRecruitAgree = false;
-            incidentCooldownTicks = 60000;
-            forceRimMindActions = false;
-
-            enableContextPull = true;
-            pullDiplomacyHistory = true;
-            pullRpgHistory = false;
         }
 
         private static Vector2 _scrollPos = Vector2.zero;

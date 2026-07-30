@@ -56,7 +56,25 @@ namespace Verse
 
     public static class Scribe_Values
     {
-        public static void Look<T>(ref T value, string label, T? defaultValue = default) { }
+        public static string? LastLabel { get; private set; }
+        public static int Calls { get; private set; }
+
+        public static void Look<T>(ref T value, string label, T? defaultValue = default)
+        {
+            LastLabel = label;
+            Calls++;
+        }
+
+        public static void Reset()
+        {
+            LastLabel = null;
+            Calls = 0;
+        }
+    }
+
+    public static class ModsConfig
+    {
+        public static bool IsActive(string packageId) => false;
     }
 
     public class ModSettings
@@ -88,65 +106,10 @@ namespace Verse
     }
 }
 
-namespace RimMind.Bridge.RimChat.Detection
-{
-    public static class RimChatDetector
-    {
-        public const string RimChatPackageId = "yancy.rimchat";
-        public static bool IsRimChatActive { get; set; }
-    }
-}
-
 namespace RimMind.Bridge.RimChat.Settings
 {
-    public class BridgeRimChatSettings : Verse.ModSettings
+    public partial class BridgeRimChatSettings : Verse.ModSettings
     {
-        public bool enablePlayerInputGate = true;
-        public bool enableChitchatGate = true;
-        public bool enableAutoGate = true;
-        public bool skipPlayerDialogue = true;
-        public bool forceRimMindPlayerDialogue = false;
-
-        public bool enableActionGate = true;
-        public bool skipDiplomacyActions = true;
-        public bool skipTriggerIncident = true;
-        public bool skipSocialActions = false;
-        public bool skipRecruitAgree = false;
-        public int incidentCooldownTicks = 60000;
-        public bool forceRimMindActions = false;
-
-        public bool enableContextPull = true;
-        public bool pullDiplomacyHistory = true;
-        public bool pullRpgHistory = false;
-
-        private static BridgeRimChatSettings? _instance;
-        public static BridgeRimChatSettings Get() => _instance ??= new BridgeRimChatSettings();
-
-        public BridgeRimChatSettings() { _instance = this; }
-
-        public static void Reset() { _instance = null; }
-
-        public void ApplyDefaults()
-        {
-            enablePlayerInputGate = true;
-            enableChitchatGate = true;
-            enableAutoGate = true;
-            skipPlayerDialogue = true;
-            forceRimMindPlayerDialogue = false;
-
-            enableActionGate = true;
-            skipDiplomacyActions = true;
-            skipTriggerIncident = true;
-            skipSocialActions = false;
-            skipRecruitAgree = false;
-            incidentCooldownTicks = 60000;
-            forceRimMindActions = false;
-
-            enableContextPull = true;
-            pullDiplomacyHistory = true;
-            pullRpgHistory = false;
-        }
-
         public static void DrawSettingsContent(UnityEngine.Rect rect) { }
     }
 }

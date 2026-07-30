@@ -128,7 +128,7 @@ namespace RimMind.Bridge.RimChat.Bridge
         /// 先查世界 pawns（已退役/待招募/世界地图上的 pawn），
         /// 再遍历所有地图的 FreeColonists（含非当前地图的殖民者）。
         /// </summary>
-        private static Pawn? TryFindPawnById(int pawnId)
+        internal static Pawn? TryFindPawnById(int pawnId)
         {
             // 1. 查世界 pawns（已退役/待招募/世界地图上的 pawn）
             var pawn = Find.WorldPawns.AllPawnsAlive.FirstOrDefault(p => p.thingIDNumber == pawnId);
