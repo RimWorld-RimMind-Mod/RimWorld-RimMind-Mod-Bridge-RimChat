@@ -1,25 +1,20 @@
-using HarmonyLib;
 using RimMind.Bridge.RimChat.Bridge;
-using RimMind.Bridge.RimChat.Cooldown;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
-using RimMind.Core;
+using RimMind.Application.Common.Interfaces.Extension;
+using RimMind.Presentation.Api;
+using RimMind.Presentation.Settings;
 using Verse;
 
 namespace RimMind.Bridge.RimChat
 {
     public class RimMindBridgeRimChatMod : Mod
     {
-        public static BridgeRimChatSettings Settings = null!;
-
         public RimMindBridgeRimChatMod(ModContentPack content) : base(content)
         {
-            Settings = GetSettings<BridgeRimChatSettings>();
-            new Harmony("mcocdaa.RimMindBridgeRimChat").PatchAll();
+            GetSettings<BridgeRimChatSettings>();
 
-            RimMindAPI.RegisterSettingsTab("bridge_rimchat",
-                () => "RimMind.BridgeRimChat.Settings.TabLabel".Translate(),
-                BridgeRimChatSettings.DrawSettingsContent);
+            RimMindAPI.Extensions<ISettingsTab>().Register(new RimChatSettingsTab());
 
             if (!RimChatDetector.IsRimChatActive)
             {
@@ -27,10 +22,13 @@ namespace RimMind.Bridge.RimChat
                 return;
             }
 
-            DialogueGate.RegisterSkipChecks();
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatDialogueSkipCheck());
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatFloatMenuSkipCheck());
             Log.Message("[RimMind-Bridge-RimChat] DialogueGate registered.");
 
-            ActionGate.Register();
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatActionSkipCheck());
+            RimMindAPI.Extensions<ISkipCheck>().Register(new RimChatStorytellerIncidentSkipCheck());
+            RimMindAPI.Extensions<IIncidentExecutedListener>().Register(new RimChatIncidentExecutedListener());
             Log.Message("[RimMind-Bridge-RimChat] ActionGate registered.");
 
             ContextPullBridge.Register();
@@ -40,10 +38,5 @@ namespace RimMind.Bridge.RimChat
         }
 
         public override string SettingsCategory() => "RimMind.BridgeRimChat.Settings.Category".Translate();
-
-        public override void DoSettingsWindowContents(UnityEngine.Rect rect)
-        {
-            BridgeRimChatSettings.DrawSettingsContent(rect);
-        }
     }
 }

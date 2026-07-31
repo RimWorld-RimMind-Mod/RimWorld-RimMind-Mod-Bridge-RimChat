@@ -1,49 +1,59 @@
 [h1]RimMind - Bridge: RimChat[/h1]
-RimMind 套件与 RimChat 模组的协调层，当两个模组同时激活时实现对话/动作互斥与上下文拉取。
 
-[h2] RimMind 是什么 [/h2]
-RimMind 是一套 AI 驱动的 RimWorld 模组套件，通过接入大语言模型 (LLM)，让殖民者拥有人格、记忆、对话和自主决策能力。
+[i]两个 AI 在你的殖民地和平共处，各管各的事，还能互相"看到"对方在做什么。[/i]
 
-[h2] 子模组列表与依赖关系 [/h2]
-[table][tr][td][b] 模组 [/b][/td][td][b] 职责 [/b][/td][td][b] 依赖 [/b][/td][td][b] GitHub [/b][/td][/tr][tr][td] RimMind-Core [/td][td] API 客户端、请求调度、上下文打包 [/td][td] Harmony [/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Core] 链接 [/url][/td][/tr][tr][td] RimMind-Actions [/td][td] AI 控制小人的动作执行库 [/td][td] Core [/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Actions] 链接 [/url][/td][/tr][tr][td] RimMind-Advisor [/td][td] AI 扮演小人做出工作决策 [/td][td] Core, Actions [/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Advisor] 链接 [/url][/td][/tr][tr][td] RimMind-Dialogue [/td][td] AI 驱动的对话系统 [/td][td] Core [/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Dialogue] 链接 [/url][/td][/tr][tr][td] RimMind-Memory [/td][td] 记忆采集与上下文注入 [/td][td] Core [/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Memory] 链接 [/url][/td][/tr][tr][td] RimMind-Personality [/td][td] AI 生成人格与想法 [/td][td] Core [/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Personality] 链接 [/url][/td][/tr][tr][td] RimMind-Storyteller [/td][td] AI 叙事者，智能选择事件 [/td][td] Core [/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Storyteller] 链接 [/url][/td][/tr][/table]
-[code]Core ── Actions ── Advisor
-  ├── Dialogue
-  ├── Memory
-  ├── Personality
-  └── Storyteller[/code]
+[h2]为什么你需要这个 Mod？[/h2]
 
-[h2] 核心能力 [/h2]
-[b] 对话门控 [/b] - 当 RimChat 激活时，自动跳过 RimMind-Dialogue 的玩家对话触发和浮动菜单，避免两个 AI 对话系统冲突。
-[b] 动作门控 [/b] - 当 RimChat 激活时，自动跳过与 RimChat 功能重叠的 RimMind-Actions 动作（外交、社交、招募）和 RimMind-Storyteller 事件触发，避免重复执行。支持共享冷却，防止短时间内重复触发事件。
-[b] 上下文拉取 [/b] - 从 RimChat 拉取外交对话历史和 RPG 对话历史，注册为 RimMind 的上下文 Provider，使 RimMind 的 AI 请求也能感知 RimChat 的对话内容。
+如果你同时装了 [b]RimMind[/b] 和 [b]RimChat[/b]，你的殖民地会有两套 AI 系统同时运行。听起来很酷对吧？但很快你就会发现——它们在抢着和同一个殖民者聊天、重复触发同一场外交事件、甚至各自做出互相矛盾的决策。
 
-[h2] 技术亮点 [/h2]
+RimMind-Bridge-RimChat 就是让它们不打架的。装上之后，两个 AI 各司其职，甚至能互相感知对方的对话内容，做出更连贯的决策。
+
+[h2]它怎么让游戏更好玩？[/h2]
+
+[b]对话不再撞车[/b]
+RimChat 在和殖民者聊天的时候，RimMind 不会插手。你不会看到两个 AI 同时弹出对话窗口，殖民者也不会被两个声音同时搭话而不知所措。如果你就是想体验两种风格的 AI 对话，也可以开启"保留 RimMind 对话"选项，让两套聊天系统共存——同一个殖民者，两种性格，随你选。
+
+[b]动作不再重复[/b]
+外交谈判、事件触发、社交关系、招募决策……这些事只让一个 AI 做。不会出现 RimMind 刚和某个派系谈和，RimChat 又把关系改回去的尴尬场面。每个动作类别都有独立开关，你可以精确决定哪些交给 RimChat、哪些留给 RimMind——比如让 RimChat 管外交，RimMind 管日常，各展所长。
+
+[b]事件不再刷屏[/b]
+两个 AI 叙事者可能会在短时间内连续触发事件，让你的殖民地应接不暇。共享冷却机制确保两次事件之间有足够的间隔。你可以自由调节冷却时间——喜欢密集事件就调短，喜欢慢节奏叙事就调到 2~3 天，让每次事件都更有冲击力。
+
+[b]AI 互相感知——最有趣的部分[/b]
+RimMind 的 AI 可以"看到" RimChat 里发生过的外交谈判和 RPG 对话。这意味着 RimMind 不会做出和 RimChat 对话内容矛盾的决策。比如 RimChat 里刚和某个派系谈和，RimMind 就不会建议你去攻击他们。两个 AI 不再是各说各话，而是形成了一个更完整的认知。
+
+[h2]推荐玩法[/h2]
+
 [list]
-[*] 纯反射读取 RimChat 数据，无编译期依赖，RimChat 未安装时静默跳过
-[*] 三层门控：对话门控 + 动作门控 + 叙事者事件冷却
-[*] 13 个可配置选项，精确控制门控范围和拉取内容
+[*] [b]RimChat 管外交，RimMind 管日常[/b] — 开启"跳过外交动作"，让 RimChat 的外交系统处理派系关系，RimMind 专注于殖民者的日常决策和对话。两个 AI 各自发挥优势。
+[*] [b]双 AI 对话共存[/b] — 开启"保留 RimMind 玩家对话"，你可以选择用 RimChat 或 RimMind 和殖民者聊天，体验不同风格的 AI 对话。同一个殖民者，两种聊天体验。
+[*] [b]RPG 对话注入上下文[/b] — 开启"拉取 RPG 对话历史"，RimMind 就能知道殖民者在 RimChat 里聊过什么，做出更连贯的反应。殖民者在 RimChat 里跟谁吵过架、跟谁谈过心，RimMind 都知道。
+[*] [b]慢节奏叙事[/b] — 把事件冷却调到 2~3 天，让叙事事件更加稀少但更有冲击力。每次事件都值得认真对待。
+[*] [b]精细控制[/b] — 15 个独立选项，每种对话类型（闲聊、自动对话、玩家对话）和动作类型（外交、社交、招募、事件）都有独立开关。想怎么搭配就怎么搭配。
 [/list]
 
-[h2] 门控逻辑 [/h2]
-[b] 对话门控 [/b]
-当 RimChat 激活且对话门控开启时，RimMind-Dialogue 的玩家对话触发和"与X对话"浮动菜单将被跳过。可强制保留 RimMind 的对话功能。
+[h2]零配置，装上就行[/h2]
 
-[b] 动作门控 [/b]
-按动作类别独立控制：
-[table][tr][td][b] 分类 [/b][/td][td][b] 动作 ID [/b][/td][td][b] 默认 [/b][/td][/tr][tr][td] 外交 [/td][td] adjust_faction, trigger_incident [/td][td] 跳过 [/td][/tr][tr][td] 社交 [/td][td] romance_accept, romance_breakup [/td][td] 不跳过 [/td][/tr][tr][td] 招募 [/td][td] recruit_agree [/td][td] 不跳过 [/td][/tr][tr][td] 叙事者事件 [/td][td] Storyteller incident [/td][td] 跳过（含共享冷却） [/td][/tr][/table]
+不需要任何设置。RimChat 在的时候自动启用桥接，不在的时候完全不影响游戏。想微调的话，去 [b]选项 → 模组设置 → RimMind-Core → Bridge (RimChat)[/b] 标签页。
 
-[b] 共享事件冷却 [/b]
-RimMind-Storyteller 和 RimChat 触发事件后共享冷却期（默认 1 游戏天），防止短时间内重复触发事件。
+[h2]兼容性[/h2]
 
-[h2] 设置项 [/h2]
-[table][tr][td][b] 设置 [/b][/td][td][b] 默认值 [/b][/td][td][b] 说明 [/b][/td][/tr][tr][td] 启用对话门控 [/td][td] 开启 [/td][td] RimChat 激活时跳过 RimMind 对话 [/td][/tr][tr][td] 跳过玩家对话 [/td][td] 开启 [/td][td] 跳过 RimMind 的玩家对话触发 [/td][/tr][tr][td] 强制 RimMind 对话 [/td][td] 关闭 [/td][td] 即使门控开启也保留 RimMind 对话 [/td][/tr][tr][td] 启用动作门控 [/td][td] 开启 [/td][td] RimChat 激活时跳过重叠动作 [/td][/tr][tr][td] 跳过外交动作 [/td][td] 开启 [/td][td] 跳过 adjust_faction, trigger_incident [/td][/tr][tr][td] 跳过叙事者事件 [/td][td] 开启 [/td][td] 跳过 Storyteller 事件触发 [/td][/tr][tr][td] 跳过社交动作 [/td][td] 关闭 [/td][td] 跳过 romance_accept, romance_breakup [/td][/tr][tr][td] 跳过招募动作 [/td][td] 关闭 [/td][td] 跳过 recruit_agree [/td][/tr][tr][td] 事件共享冷却 [/td][td] 1 游戏天 (60000 ticks) [/td][td] 防止短时间重复触发事件 [/td][/tr][tr][td] 强制 RimMind 动作 [/td][td] 关闭 [/td][td] 仅影响 Actions，不影响 Storyteller [/td][/tr][tr][td] 启用上下文拉取 [/td][td] 开启 [/td][td] 从 RimChat 拉取对话历史 [/td][/tr][tr][td] 拉取外交历史 [/td][td] 开启 [/td][td] 拉取 RimChat 外交对话历史 [/td][/tr][tr][td] 拉取 RPG 历史 [/td][td] 关闭 [/td][td] 拉取 RimChat RPG 对话历史 [/td][/tr][/table]
+[list]
+[*] 不装 RimChat？完全没问题，本 Mod 静默跳过，不报错不影响。
+[*] RimChat 更新导致内部结构变化？所有数据读取都有容错保护，最多是功能静默失效，不会崩溃。
+[*] 需要 RimMind-Core 作为前置，其他 RimMind 子模组按需安装。
+[/list]
 
-[h2] 常见问题 [/h2]
-[b] Q: 不安装 RimChat 可以用吗？ [/b]
-A: 可以。RimChat 未安装时所有门控自动失效，本模组不产生任何影响。
+[h2]RimMind 套件[/h2]
 
-[b] Q: 可以只启用部分门控吗？ [/b]
-A: 可以。每个门控类别都有独立开关，你可以精确控制哪些功能由 RimChat 处理，哪些由 RimMind 处理。
+RimMind 是一套 AI 驱动的 RimWorld 模组，让殖民者拥有人格、记忆、对话和自主决策能力：
 
-[b] Q: 上下文拉取有什么用？ [/b]
-A: 拉取 RimChat 的对话历史后，RimMind 的 AI 请求也能感知 RimChat 的对话内容，避免 AI 做出与 RimChat 对话矛盾的决策。
+[list]
+[*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Core]RimMind-Core[/url] — 核心 API 与上下文系统
+[*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Dialogue]RimMind-Dialogue[/url] — AI 对话系统
+[*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Actions]RimMind-Actions[/url] — AI 动作执行
+[*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Storyteller]RimMind-Storyteller[/url] — AI 叙事者
+[*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Personality]RimMind-Personality[/url] — AI 人格生成
+[*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Memory]RimMind-Memory[/url] — 记忆采集
+[*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Advisor]RimMind-Advisor[/url] — AI 工作顾问
+[/list]

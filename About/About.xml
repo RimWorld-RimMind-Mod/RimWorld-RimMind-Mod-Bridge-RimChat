@@ -3,11 +3,11 @@
   <name>RimMind - Bridge (RimChat)</name>
   <author>mcocdaa</author>
   <packageId>mcocdaa.RimMindBridgeRimChat</packageId>
-  <modVersion>0.0.1</modVersion>
+  <modVersion>2.0.0</modVersion>
   <supportedVersions>
     <li>1.6</li>
   </supportedVersions>
-  <description>Coordination bridge between RimMind suite and RimChat. Handles dialogue/action dedup and context exposure.</description>
+  <description>Coordination bridge between RimMind suite and RimChat. Handles dialogue/action dedup and context exposure. [v2.0 BREAKING CHANGES]</description>
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>
@@ -19,8 +19,14 @@
       <displayName>RimMind - Core</displayName>
       <downloadUrl>https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Core</downloadUrl>
     </li>
+    <li>
+      <packageId>yancy.rimchat</packageId>
+      <displayName>RimChat</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3683001105</steamWorkshopUrl>
+    </li>
   </modDependencies>
   <loadAfter>
+    <li>brrainz.harmony</li>
     <li>yancy.rimchat</li>
     <li>mcocdaa.RimMindCore</li>
     <li>mcocdaa.RimMindMemory</li>

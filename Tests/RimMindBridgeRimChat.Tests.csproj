@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>RimMind.Bridge.RimChat.Tests</RootNamespace>
+    <AssemblyName>RimMindBridgeRimChat.Tests</AssemblyName>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.9.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="RimChatStubs.cs" />
+    <Compile Include="Contracts\**\*.cs" />
+    <Compile Include="..\..\RimMind-Core\TestSupport\ContractCaseRunner.cs"
+             Link="Support\ContractCaseRunner.cs" />
+    <Compile Include="../Source/Bridge/RimChatApiShim.cs" />
+    <Compile Include="../Source/Bridge/DialogueGate.cs" />
+    <Compile Include="../Source/Bridge/ActionGate.cs" />
+    <Compile Include="../Source/Bridge/ContextPullBridge.cs" />
+    <Compile Include="../Source/Detection/RimChatDetector.cs" />
+    <Compile Include="../Source/Settings/BridgeRimChatSettings.State.cs" />
+    <Compile Include="../Source/Cooldown/SharedIncidentCooldown.cs" />
+    <Compile Include="../Source/Cooldown/GameComponent_BridgeRimChat.cs" />
+    <Compile Include="../Source/Extensions/RimChatIncidentExecutedListener.cs" />
+    <Compile Include="../Source/Extensions/RimChatActionSkipCheck.cs" />
+    <Compile Include="../Source/Extensions/RimChatDialogueSkipCheck.cs" />
+    <Compile Include="../Source/Extensions/RimChatFloatMenuSkipCheck.cs" />
+    <Compile Include="../Source/Extensions/RimChatStorytellerIncidentSkipCheck.cs" />
+    <Compile Include="../Source/Extensions/RimChatSettingsTab.cs" />
+    <Compile Include="../Source/RimMindBridgeRimChatMod.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../RimMind-Core/Source/Domain/RimMindCore.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

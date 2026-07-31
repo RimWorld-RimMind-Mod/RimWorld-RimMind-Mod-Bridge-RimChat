@@ -1,18 +1,22 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
-using HarmonyLib;
+using System.Threading;
+using System.Threading.Tasks;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
-using RimMind.Core;
-using RimMind.Core.Prompt;
+using RimMind.Application.Common.Interfaces.Context;
+using RimMind.Domain.ValueObjects;
+using RimMind.Presentation.Api;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge
 {
     public static class ContextPullBridge
     {
-        private const string ModId = "RimMind.BridgeRimChat";
+        private const string ModId = "RimMindBridgeRimChat";
 
         public static void Register()
         {
@@ -30,10 +34,12 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         private static void RegisterDiplomacyProvider()
         {
-            RimMindAPI.RegisterStaticProvider("rimchat_diplomacy", () =>
-            {
-                return (string?)BuildDiplomacyContext();
-            }, PromptSection.PriorityAuxiliary, ModId);
+            RimMindAPI.Context.ContextKeys.Register(new ContextProviderDef(
+                "rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
+                async (ctx, ct) =>
+                {
+                    return BuildDiplomacyContext();
+                }, ModId, stalenessTicks: 1500, invalidationTriggers: new[] { "RimChatEvent" }));
         }
 
         private static string? BuildDiplomacyContext()
@@ -42,21 +48,10 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             try
             {
-                var managerType = AccessTools.TypeByName("RimChat.DiplomacySystem.GameComponent_DiplomacyManager");
-                if (managerType == null) return null;
-
-                var instanceProp = managerType.GetProperty("Instance",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (instanceProp == null) return null;
-
-                var manager = instanceProp.GetValue(null);
+                var manager = RimChatApiShim.TryGetManagerInstance(RimChatApiShim.DiplomacyManagerType);
                 if (manager == null) return null;
 
-                var sessionsField = managerType.GetField("dialogueSessions",
-                    BindingFlags.Public | BindingFlags.Instance);
-                if (sessionsField == null) return null;
-
-                var sessions = sessionsField.GetValue(manager) as IList;
+                var sessions = RimChatApiShim.GetInstanceFieldValue(manager, "dialogueSessions") as IList;
                 if (sessions == null || sessions.Count == 0) return null;
 
                 var sb = new StringBuilder("[RimChat Diplomacy]");
@@ -85,6 +80,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     {
                         if (msgCount >= 4) break;
                         var msg = messages[i];
+                        if (msg == null) continue;
                         var senderField = msg.GetType().GetField("sender",
                             BindingFlags.Public | BindingFlags.Instance);
                         var messageField = msg.GetType().GetField("message",
@@ -96,7 +92,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 
                         string sender = senderField.GetValue(msg)?.ToString() ?? "?";
                         string content = messageField.GetValue(msg)?.ToString() ?? "";
-                        bool isPlayer = isPlayerField != null && (bool)isPlayerField.GetValue(msg);
+                        bool isPlayer = isPlayerField?.GetValue(msg) is bool playerMessage && playerMessage;
 
                         if (string.IsNullOrEmpty(content)) continue;
                         string label = isPlayer ? "Player" : sender;
@@ -107,18 +103,45 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }
                 return sessionCount > 0 ? sb.ToString().TrimEnd() : null;
             }
-            catch
+            catch (System.Exception ex)
             {
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] Diplomacy context pull failed: {ex.Message}");
                 return null;
             }
         }
 
         private static void RegisterRpgProvider()
         {
-            RimMindAPI.RegisterPawnContextProvider("rimchat_rpg_history", pawn =>
+            RimMindAPI.Context.ContextKeys.Register(new ContextProviderDef(
+                "rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
+                async (ctx, ct) =>
+                {
+                    if (ctx.PawnId <= 0) return null;
+                    var pawn = TryFindPawnById(ctx.PawnId);
+                    if (pawn == null) return null;
+                    return BuildRpgContext(pawn);
+                }, ModId, stalenessTicks: 3000, invalidationTriggers: new[] { "RimChatEvent" }));
+        }
+
+        /// <summary>
+        /// 根据 thingIDNumber 在所有可能位置查找 Pawn。
+        /// 先查世界 pawns（已退役/待招募/世界地图上的 pawn），
+        /// 再遍历所有地图的 FreeColonists（含非当前地图的殖民者）。
+        /// </summary>
+        internal static Pawn? TryFindPawnById(int pawnId)
+        {
+            // 1. 查世界 pawns（已退役/待招募/世界地图上的 pawn）
+            var pawn = Find.WorldPawns.AllPawnsAlive.FirstOrDefault(p => p.thingIDNumber == pawnId);
+            if (pawn != null) return pawn;
+
+            // 2. 遍历所有地图的 colonists（含非当前地图）
+            foreach (var map in Find.Maps)
             {
-                return BuildRpgContext(pawn);
-            }, PromptSection.PriorityMemory, ModId);
+                pawn = map.mapPawns?.FreeColonists.FirstOrDefault(p => p.thingIDNumber == pawnId);
+                if (pawn != null) return pawn;
+            }
+
+            return null;
         }
 
         private static string? BuildRpgContext(Pawn pawn)
@@ -127,34 +150,30 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             try
             {
-                var managerType = AccessTools.TypeByName("RimChat.Memory.RpgNpcDialogueArchiveManager");
-                if (managerType == null) return null;
-
-                var instanceProp = managerType.GetProperty("Instance",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (instanceProp == null) return null;
-
-                var manager = instanceProp.GetValue(null);
+                var manager = RimChatApiShim.TryGetManagerInstance(RimChatApiShim.RpgArchiveManagerType);
                 if (manager == null) return null;
 
-                var cacheField = managerType.GetField("_archiveCache",
-                    BindingFlags.NonPublic | BindingFlags.Instance);
-                if (cacheField == null) return null;
-
-                var cache = cacheField.GetValue(manager) as IDictionary;
+                var cache = RimChatApiShim.GetInstanceFieldValue(manager, "_archiveCache",
+                    BindingFlags.NonPublic | BindingFlags.Instance) as IDictionary;
                 if (cache == null) return null;
 
                 object? archive = null;
                 foreach (DictionaryEntry entry in cache)
                 {
-                    var pawnLoadIdField = entry.Value.GetType().GetField("PawnLoadId",
+                    var archiveCandidate = entry.Value;
+                    if (archiveCandidate == null) continue;
+
+                    var pawnLoadIdField = archiveCandidate.GetType().GetField("PawnLoadId",
                         BindingFlags.Public | BindingFlags.Instance);
                     if (pawnLoadIdField != null)
                     {
-                        int archivePawnId = (int)pawnLoadIdField.GetValue(entry.Value);
+                        var archivePawnIdValue = pawnLoadIdField.GetValue(archiveCandidate);
+                        if (archivePawnIdValue == null) continue;
+
+                        int archivePawnId = System.Convert.ToInt32(archivePawnIdValue);
                         if (archivePawnId == pawn.thingIDNumber)
                         {
-                            archive = entry.Value;
+                            archive = archiveCandidate;
                             break;
                         }
                     }
@@ -176,6 +195,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     if (sessionCount >= 2) break;
 
                     var session = sessions[si];
+                    if (session == null) continue;
                     var turnsField = session.GetType().GetField("Turns",
                         BindingFlags.Public | BindingFlags.Instance);
                     if (turnsField == null) continue;
@@ -189,6 +209,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     {
                         if (turnCount >= 4) break;
                         var turn = turns[ti];
+                        if (turn == null) continue;
 
                         var isPlayerField = turn.GetType().GetField("IsPlayer",
                             BindingFlags.Public | BindingFlags.Instance);
@@ -199,7 +220,7 @@ namespace RimMind.Bridge.RimChat.Bridge
 
                         if (textField == null) continue;
 
-                        bool isPlayer = isPlayerField != null && (bool)isPlayerField.GetValue(turn);
+                        bool isPlayer = isPlayerField?.GetValue(turn) is bool playerTurn && playerTurn;
                         string speaker = speakerField?.GetValue(turn)?.ToString() ?? "?";
                         string text = textField.GetValue(turn)?.ToString() ?? "";
 
@@ -212,8 +233,9 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }
                 return sessionCount > 0 ? sb.ToString().TrimEnd() : null;
             }
-            catch
+            catch (System.Exception ex)
             {
+                RimMindErrors.Warn($"[RimMind-Bridge-RimChat] RPG context pull failed: {ex.Message}");
                 return null;
             }
         }
@@ -226,7 +248,14 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         public static void Unregister()
         {
-            RimMindAPI.UnregisterModProviders(ModId);
+            RimMindAPI.Context.ContextKeys.Unregister("rimchat_diplomacy");
+            RimMindAPI.Context.ContextKeys.Unregister("rimchat_rpg_history");
+        }
+
+        public static void Refresh()
+        {
+            Unregister();
+            Register();
         }
     }
 }
