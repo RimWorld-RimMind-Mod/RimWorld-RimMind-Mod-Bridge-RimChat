@@ -4,40 +4,13 @@ namespace RimMind.Bridge.RimChat.Cooldown
 {
     public static class SharedIncidentCooldown
     {
-        private static int _lastIncidentTick = -99999;
+        private static GameComponent_BridgeRimChat? State =>
+            Current.Game?.GetComponent<GameComponent_BridgeRimChat>();
 
         public static void RecordIncident()
-        {
-            try
-            {
-                _lastIncidentTick = Find.TickManager.TicksGame;
-            }
-            catch
-            {
-                _lastIncidentTick = 0;
-            }
-        }
+            => State?.RecordIncident(Find.TickManager.TicksGame);
 
         public static bool IsOnCooldown(int cooldownTicks)
-        {
-            try
-            {
-                return Find.TickManager.TicksGame - _lastIncidentTick < cooldownTicks;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        internal static void ExposeData()
-        {
-            Scribe_Values.Look(ref _lastIncidentTick, "RimMind_BridgeRimChat_LastIncidentTick", -99999);
-        }
-
-        internal static void ResetForTesting(int lastIncidentTick = -99999)
-        {
-            _lastIncidentTick = lastIncidentTick;
-        }
+            => State?.IsOnCooldown(Find.TickManager.TicksGame, cooldownTicks) ?? false;
     }
 }

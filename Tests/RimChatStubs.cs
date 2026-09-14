@@ -58,17 +58,25 @@ namespace Verse
     {
         public static string? LastLabel { get; private set; }
         public static int Calls { get; private set; }
+        public static bool Loading { get; set; }
+        private static readonly Dictionary<string, object?> Values = new();
 
         public static void Look<T>(ref T value, string label, T? defaultValue = default)
         {
             LastLabel = label;
             Calls++;
+            if (Loading)
+                value = Values.TryGetValue(label, out var saved) ? (T)saved! : defaultValue!;
+            else
+                Values[label] = value;
         }
 
         public static void Reset()
         {
             LastLabel = null;
             Calls = 0;
+            Loading = false;
+            Values.Clear();
         }
     }
 
@@ -83,7 +91,16 @@ namespace Verse
         public void Write() { }
     }
 
-    public class Game { }
+    public static class Current
+    {
+        public static Game? Game;
+    }
+
+    public class Game
+    {
+        public readonly List<GameComponent> Components = new();
+        public T? GetComponent<T>() where T : GameComponent => Components.OfType<T>().FirstOrDefault();
+    }
 
     public class GameComponent
     {

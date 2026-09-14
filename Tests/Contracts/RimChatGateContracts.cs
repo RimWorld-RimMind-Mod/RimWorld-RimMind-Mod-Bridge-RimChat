@@ -148,17 +148,6 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     settings.forceRimMindActions = true;
 
                     Assert.True(ActionGate.ShouldSkipStorytellerIncident());
-                }),
-                ("game component persists the shared per-game cooldown", () =>
-                {
-                    Verse.Scribe_Values.Reset();
-
-                    new GameComponent_BridgeRimChat(new Verse.Game()).ExposeData();
-
-                    Assert.Equal(1, Verse.Scribe_Values.Calls);
-                    Assert.Equal(
-                        "RimMind_BridgeRimChat_LastIncidentTick",
-                        Verse.Scribe_Values.LastLabel);
                 }));
         }
 
@@ -172,7 +161,52 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
         private static void ResetCooldown(int tick)
         {
             Verse.Find.TickManager.TicksGame = tick;
-            SharedIncidentCooldown.ResetForTesting();
+            StartGame();
+        }
+
+        [Fact]
+        public void Incident_cooldown_does_not_cross_game_lifetimes()
+        {
+            ResetCooldown(300000);
+            SharedIncidentCooldown.RecordIncident();
+            Assert.True(SharedIncidentCooldown.IsOnCooldown(60000));
+
+            StartGame();
+            Verse.Find.TickManager.TicksGame = 0;
+            Assert.False(SharedIncidentCooldown.IsOnCooldown(60000));
+
+            SharedIncidentCooldown.RecordIncident();
+            Assert.True(SharedIncidentCooldown.IsOnCooldown(60000));
+            Verse.Current.Game = null;
+            Assert.False(SharedIncidentCooldown.IsOnCooldown(60000));
+        }
+
+        [Fact]
+        public void Saved_incident_cooldown_restores_only_into_the_loaded_game()
+        {
+            ResetCooldown(100000);
+            SharedIncidentCooldown.RecordIncident();
+            Verse.Scribe_Values.Reset();
+            Verse.Current.Game!.GetComponent<GameComponent_BridgeRimChat>()!.ExposeData();
+            Assert.Equal("RimMind_BridgeRimChat_LastIncidentTick", Verse.Scribe_Values.LastLabel);
+
+            StartGame();
+            Verse.Find.TickManager.TicksGame = 159999;
+            Assert.False(SharedIncidentCooldown.IsOnCooldown(60000));
+
+            Verse.Scribe_Values.Loading = true;
+            Verse.Current.Game!.GetComponent<GameComponent_BridgeRimChat>()!.ExposeData();
+            Verse.Scribe_Values.Loading = false;
+            Assert.True(SharedIncidentCooldown.IsOnCooldown(60000));
+            Verse.Find.TickManager.TicksGame = 160000;
+            Assert.False(SharedIncidentCooldown.IsOnCooldown(60000));
+        }
+
+        private static void StartGame()
+        {
+            var game = new Verse.Game();
+            game.Components.Add(new GameComponent_BridgeRimChat(game));
+            Verse.Current.Game = game;
         }
     }
 }
