@@ -2,17 +2,20 @@ using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Application.Common.Interfaces.Extension;
+using RimMind.Presentation;
 using RimMind.Presentation.Api;
 using RimMind.Presentation.Settings;
 using Verse;
 
 namespace RimMind.Bridge.RimChat
 {
-    public class RimMindBridgeRimChatMod : Mod
+    public class RimMindBridgeRimChatMod : RimMindSubmodBase<BridgeRimChatSettings>
     {
+        public static new BridgeRimChatSettings Settings = null!;
+
         public RimMindBridgeRimChatMod(ModContentPack content) : base(content)
         {
-            GetSettings<BridgeRimChatSettings>();
+            Settings = base.Settings;
 
             RimMindAPI.Extensions<ISettingsTab>().Register(new RimChatSettingsTab());
 
@@ -37,6 +40,9 @@ namespace RimMind.Bridge.RimChat
             Log.Message("[RimMind-Bridge-RimChat] Initialized.");
         }
 
-        public override string SettingsCategory() => "RimMind.BridgeRimChat.Settings.Category".Translate();
+        public override void DoSettingsWindowContents(UnityEngine.Rect rect)
+        {
+            BridgeRimChatSettings.DrawSettingsContent(rect);
+        }
     }
 }

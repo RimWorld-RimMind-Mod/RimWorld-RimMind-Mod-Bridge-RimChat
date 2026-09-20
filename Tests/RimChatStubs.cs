@@ -325,3 +325,13 @@ namespace RimMind.Presentation.Settings
         void Draw(UnityEngine.Rect rect);
     }
 }
+
+namespace RimMind.Presentation
+{
+    public abstract class RimMindSubmodBase<TSettings> : Verse.Mod where TSettings : Verse.ModSettings, new()
+    {
+        public TSettings Settings { get; } = new TSettings();
+        protected RimMindSubmodBase(Verse.ModContentPack content) : base(content) { }
+        public virtual void DoSettingsWindowContents(UnityEngine.Rect rect) { }
+    }
+}
