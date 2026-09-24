@@ -1,10 +1,16 @@
 [h1]RimMind - Bridge: RimChat[/h1]
+[h1]RimMind - Bridge: RimChat (双模组协同桥梁)[/h1]
 
 [i]两个 AI 在你的殖民地和平共处，各管各的事，还能互相"看到"对方在做什么。[/i]
+[i]让 RimMind 与 RimChat 和谐共存、各司其职，消除双 AI 冲突与事件撞车。[/i]
+[i]Seamlessly integrate RimMind with RimChat — Harmonize dialogues, eliminate collisions, and share colony context.[/i]
 
 [h2]为什么你需要这个 Mod？[/h2]
+[hr]
+[h2]📖 中文介绍 / Chinese Overview[/h2]
 
 如果你同时装了 [b]RimMind[/b] 和 [b]RimChat[/b]，你的殖民地会有两套 AI 系统同时运行。听起来很酷对吧？但很快你就会发现——它们在抢着和同一个殖民者聊天、重复触发同一场外交事件、甚至各自做出互相矛盾的决策。
+[b]RimMind-Bridge-RimChat[/b] 专为同时使用 RimMind 与 RimChat 的玩家打造。当两套强大的 AI 模组同时运行时，本桥梁模组能够有效防止对话撞车、消除重复外交判定，并实现事件冷却共享。
 
 RimMind-Bridge-RimChat 就是让它们不打架的。装上之后，两个 AI 各司其职，甚至能互相感知对方的对话内容，做出更连贯的决策。
 
@@ -24,30 +30,43 @@ RimMind 的 AI 可以"看到" RimChat 里发生过的外交谈判和 RPG 对话�
 
 [h2]推荐玩法[/h2]
 
+[h3]🌟 核心特性[/h3]
 [list]
 [*] [b]RimChat 管外交，RimMind 管日常[/b] — 开启"跳过外交动作"，让 RimChat 的外交系统处理派系关系，RimMind 专注于殖民者的日常决策和对话。两个 AI 各自发挥优势。
 [*] [b]双 AI 对话共存[/b] — 开启"保留 RimMind 玩家对话"，你可以选择用 RimChat 或 RimMind 和殖民者聊天，体验不同风格的 AI 对话。同一个殖民者，两种聊天体验。
 [*] [b]RPG 对话注入上下文[/b] — 开启"拉取 RPG 对话历史"，RimMind 就能知道殖民者在 RimChat 里聊过什么，做出更连贯的反应。殖民者在 RimChat 里跟谁吵过架、跟谁谈过心，RimMind 都知道。
 [*] [b]慢节奏叙事[/b] — 把事件冷却调到 2~3 天，让叙事事件更加稀少但更有冲击力。每次事件都值得认真对待。
 [*] [b]精细控制[/b] — 15 个独立选项，每种对话类型（闲聊、自动对话、玩家对话）和动作类型（外交、社交、招募、事件）都有独立开关。想怎么搭配就怎么搭配。
+[*] [b]对话防撞车[/b]：智能协调聊天窗口，避免两个 AI 同时向同一个小人搭话产生冲突。
+[*] [b]动作与事件门控[/b]：灵活配置外交、招募等高危行为的管辖权，分工协作。
+[*] [b]共享冷却保护[/b]：防止双 AI 短时间内连续派发重叠事件，保障游戏节奏平稳。
 [/list]
 
 [h2]零配置，装上就行[/h2]
+[hr]
+[h2]🌐 English Overview[/h2]
 
 不需要任何设置。RimChat 在的时候自动启用桥接，不在的时候完全不影响游戏。想微调的话，去 [b]选项 → 模组设置 → RimMind-Core → Bridge (RimChat)[/b] 标签页。
+[b]RimMind-Bridge-RimChat[/b] resolves conflicts and unifies gameplay when running both RimMind and RimChat simultaneously.
 
 [h2]兼容性[/h2]
 
+[h3]🌟 Key Highlights[/h3]
 [list]
 [*] 不装 RimChat？完全没问题，本 Mod 静默跳过，不报错不影响。
 [*] RimChat 更新导致内部结构变化？所有数据读取都有容错保护，最多是功能静默失效，不会崩溃。
 [*] 需要 RimMind-Core 作为前置，其他 RimMind 子模组按需安装。
+[*] [b]Dialogue Gating[/b]: Prevents dialogue popups from clashing or interrupting each other.
+[*] [b]Action Separation[/b]: Assign diplomatic, recruitment, and colony management duties between both AI systems.
+[*] [b]Shared Cooldowns[/b]: Prevents overwhelming incident cascades.
 [/list]
 
 [h2]RimMind 套件[/h2]
 
 RimMind 是一套 AI 驱动的 RimWorld 模组，让殖民者拥有人格、记忆、对话和自主决策能力：
 
+[hr]
+[h2]⚙️ 依赖与顺序 / Requirements & Order[/h2]
 [list]
 [*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Core]RimMind-Core[/url] — 核心 API 与上下文系统
 [*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Dialogue]RimMind-Dialogue[/url] — AI 对话系统
@@ -56,4 +75,5 @@ RimMind 是一套 AI 驱动的 RimWorld 模组，让殖民者拥有人格、记�
 [*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Personality]RimMind-Personality[/url] — AI 人格生成
 [*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Memory]RimMind-Memory[/url] — 记忆采集
 [*] [url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Advisor]RimMind-Advisor[/url] — AI 工作顾问
+[*] [b]必需前置 (Required)[/b]: Harmony, [b]RimMind-Core[/b], [b]RimChat[/b]
 [/list]
