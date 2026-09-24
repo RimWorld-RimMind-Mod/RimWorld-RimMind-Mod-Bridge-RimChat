@@ -1,309 +1,73 @@
 # AGENTS.md — RimMind-Bridge-RimChat
 
-本文件供 AI 编码助手阅读，描述 RimMind-Bridge-RimChat 的架构、代码约定和扩展模式。
+RimMind 与 RimChat 的对话/动作门控、上下文拉取桥。仅编译依赖 Core；
+对 RimChat 的访问经过反射，不直接依赖其他 RimMind 子模组。
 
-## 项目定位
+## 阅读路径
 
-RimMind-Bridge-RimChat 是 RimMind 套件与 RimChat 模组之间的协调层。当两个模组同时激活时，本模组负责：
+| 任务 | 入口与实际所有者 |
+|---|---|
+| 加载、设置和扩展注册 | `Source/RimMindBridgeRimChatMod.cs` → `Extensions/` |
+| 对话、玩家菜单互斥 | `Source/Bridge/DialogueGate.cs` |
+| 动作分类、叙事者事件门控 | `Source/Bridge/ActionGate.cs` |
+| 当前游戏事件冷却 | `Source/Cooldown/SharedIncidentCooldown.cs` → `GameComponent_BridgeRimChat.cs` |
+| RimChat 历史 → Core Context | `Source/Bridge/ContextPullBridge.cs` → `RimChatApiShim.cs` |
+| RimChat 启用检测 | `Source/Detection/RimChatDetector.cs` |
+| 设置值与存档 | `Source/Settings/BridgeRimChatSettings.cs` |
 
-1. **对话门控**：避免 RimMind-Dialogue 和 RimChat 重复触发玩家对话
-2. **动作门控**：避免 RimMind-Actions 和 RimChat 重复执行外交、社交、招募等动作；避免 RimMind-Storyteller 和 RimChat 重复触发事件
-3. **上下文拉取**：从 RimChat 拉取外交/RPG对话历史，注册为 RimMind Provider，使 RimMind 能感知 RimChat 的对话内容
+## 门控规则
 
-本模组通过 `RimMindAPI` 注册 SkipCheck 和 Provider，不依赖 RimChat 的编译期引用，因此 RimChat 未安装时不会报错。
+- Chitchat、Auto、PlayerInput 独立开关；玩家菜单与 PlayerInput 共用条件。
+- 玩家输入：`enablePlayerInputGate && skipPlayerDialogue && !forceRimMindPlayerDialogue`。
+- 动作：`enableActionGate` 关闭或 `forceRimMindActions` 开启时不阻止。
+- 外交分类：`adjust_faction`、`trigger_incident`；社交分类：
+  `romance_attempt`、`romance_breakup`；招募分类：`recruit_agree`。
+- Storyteller 事件是独立门控：`enableActionGate && skipTriggerIncident` 后检查共享冷却；
+  不受 `forceRimMindActions` 影响。
+- RimChat 未激活时不阻止上述行为。
 
-## 源码结构
+## 状态与兼容边界
 
-```
-Source/
-├── RimMindBridgeRimChatMod.cs   Mod 入口，注册 Harmony、Settings Tab，按条件注册桥接模块
-├── Bridge/
-│   ├── DialogueGate.cs          对话门控，注册 SkipCheck 防止重复触发
-│   ├── ActionGate.cs            动作门控，注册 ActionSkipCheck + IncidentSkipCheck + IncidentCallback
-│   └── ContextPullBridge.cs     上下文拉取，从 RimChat 读取对话历史注册为 RimMind Provider
-├── Cooldown/
-│   └── SharedIncidentCooldown.cs 事件触发共享冷却，防止 RimMind-Storyteller 与 RimChat 短时间内重复触发事件
-├── Detection/
-│   └── RimChatDetector.cs       检测 RimChat 是否激活（带缓存）
-└── Settings/
-    └── BridgeRimChatSettings.cs 模组设置（对话门控 + 动作门控 + 上下文拉取）
-```
+- ModSettings 只保存用户设置；新增设置需同步字段、ExposeData、ApplyDefaults、UI、翻译。
+- 上次事件 tick 是 `GameComponent_BridgeRimChat` 的实例字段。
+  `SharedIncidentCooldown` 只定位 `Current.Game` 的组件，不持有跨游戏状态。
+- 存档键保留 `RimMind_BridgeRimChat_LastIncidentTick`；组件由 Verse 发现 `(Game game)` 构造。
+- 新游戏不继承旧游戏冷却；无游戏时冷却不生效。新增 per-game 状态必须由游戏组件拥有。
+- 对 RimChat 的反射统一走 `RimChatApiShim`，异常隔离；类型延迟解析并保留 NoInlining。
+  manager 获取复用 `TryGetManagerInstance`。
+- 所有扩展和 Context Provider 的 owner 为 `RimMindBridgeRimChat`，不要混用带点号名称。
+- 设置变化由已注册委托实时读取，不重复注册 SkipCheck。
 
-## 关键类与 API
+## Context Provider
 
-### RimChatDetector
+通过 `RimMindAPI.Context.ContextKeys.Register(new ContextProviderDef(...))` 注册：
 
-检测 RimChat 模组状态，带缓存：
+| Key | 来源 | 开关 |
+|---|---|---|
+| `rimchat_diplomacy` | 外交会话，world-level | `pullDiplomacyHistory` |
+| `rimchat_rpg_history` | Pawn RPG 历史 | `pullRpgHistory` |
 
-```csharp
-static class RimChatDetector {
-    const string RimChatPackageId = "yancy.rimchat";
+Pawn 解析复用 `TryFindPawnById`，覆盖世界 pawns 和所有地图，不只当前地图。
+Context、门控与事件通知均经过 Core 公共边界。
 
-    bool IsRimChatActive  // RimChat 模组是否激活（6000 tick 缓存）
-    void InvalidateCache() // 手动刷新缓存
-}
-```
+## 验证
 
-### DialogueGate
+从仓库根目录运行：
 
-对话门控，防止 RimMind-Dialogue 和 RimChat 同时触发玩家对话：
-
-```csharp
-static class DialogueGate {
-    bool ShouldSkipDialogue(Pawn pawn, string triggerType)
-    // triggerType: "PlayerInput" 时检查 skipPlayerDialogue
-
-    bool ShouldSkipFloatMenuOption()
-    // 判断是否跳过 RimMind 的"与X对话"浮动菜单
-
-    void RegisterSkipChecks()
-    // 注册到 RimMindAPI.RegisterDialogueSkipCheck / RegisterFloatMenuSkipCheck
-
-    void UnregisterSkipChecks()
-    // 清理注册
-}
+```powershell
+dotnet test RimMind-Bridge-RimChat/Tests/RimMindBridgeRimChat.Tests.csproj -c Release
+dotnet build RimMind-Bridge-RimChat/Source/RimMindBridgeRimChat.csproj -c Release
 ```
 
-门控逻辑：
+- `Tests/Contracts/RimChatGateContracts.cs`：门控、冷却边界、新游戏隔离和存档恢复。
+- `Tests/Contracts/RimChatContextApiContracts.cs`：Context 与反射边界。
+- `Tests/Contracts/RimChatCompatibilityContracts.cs`：设置和扩展兼容。
+- `Tests/RimChatStubs.cs`：仅替代 Verse/RimChat 等外部边界。
 
-| 条件 | 跳过条件 |
-|------|---------|
-| `"PlayerInput"` 对话 | `enableDialogueGate && skipPlayerDialogue && !forceRimMindPlayerDialogue` |
-| 浮动菜单 | `enableDialogueGate && skipPlayerDialogue && !forceRimMindPlayerDialogue` |
+每 mod 全部项目累计少于 1000 个发现用例，每个参数化数据行计数。
+游戏 E2E 资源阻塞时不运行、不宣称通过。
 
-### ActionGate
+## 先询问
 
-动作门控，防止 RimMind-Actions/Storyteller 和 RimChat 重复执行动作：
-
-```csharp
-static class ActionGate {
-    bool ShouldSkipAction(string intentId)
-    // 检查动作是否应被跳过
-
-    bool ShouldSkipStorytellerIncident()
-    // 检查 Storyteller 事件是否应被跳过（含冷却检查）
-
-    void Register()
-    // 注册到 RimMindAPI.RegisterActionSkipCheck / RegisterIncidentExecutedCallback / RegisterStorytellerIncidentSkipCheck
-
-    void Unregister()
-    // 清理注册
-}
-```
-
-动作分类：
-
-| 分类 | 动作 ID | 设置开关 |
-|------|---------|---------|
-| 外交 | `adjust_faction`, `trigger_incident` | skipDiplomacyActions |
-| 社交 | `romance_accept`, `romance_breakup` | skipSocialActions |
-| 招募 | `recruit_agree` | skipRecruitAgree |
-| 叙事者事件 | Storyteller incident | skipTriggerIncident + SharedIncidentCooldown |
-
-> **注意**：`trigger_incident` 同时出现在 DiplomacyActions（RimMind-Actions 的动作ID）和 Storyteller 事件跳过（skipTriggerIncident）中。前者由 `skipDiplomacyActions` 控制，后者由 `skipTriggerIncident` 控制，两者互不干扰。
-
-门控逻辑：
-
-```
-ShouldSkipAction:
-  RimChat 未激活 → false
-  enableActionGate 关闭 → false
-  forceRimMindActions 开启 → false（强制 RimMind-Actions 执行所有动作，不影响 Storyteller）
-  skipDiplomacyActions && intentId ∈ DiplomacyActions → true
-  skipSocialActions && intentId ∈ SocialActions → true
-  skipRecruitAgree && intentId == "recruit_agree" → true
-  否则 → false
-
-ShouldSkipStorytellerIncident:
-  RimChat 未激活 → false
-  enableActionGate 关闭 → false
-  skipTriggerIncident 关闭 → false
-  SharedIncidentCooldown.IsOnCooldown(incidentCooldownTicks) → true/false
-```
-
-### SharedIncidentCooldown
-
-事件触发共享冷却，防止 RimMind-Storyteller 和 RimChat 短时间内重复触发事件：
-
-```csharp
-static class SharedIncidentCooldown {
-    void RecordIncident()          // 记录事件触发时间
-    bool IsOnCooldown(int cooldownTicks) // 检查是否在冷却中
-    int LastIncidentTick { get; }  // 上次事件触发 tick
-    void Reset()                   // 重置冷却
-}
-```
-
-### ContextPullBridge
-
-从 RimChat 拉取对话历史，注册为 RimMind Provider：
-
-```csharp
-static class ContextPullBridge {
-    void Register()    // 根据设置注册各 Provider
-    void Unregister()  // 清理所有注册（RimMindAPI.UnregisterModProviders）
-}
-```
-
-注册的 Provider：
-
-| Category | 数据来源 | 类型 | 优先级 | 设置开关 |
-|----------|---------|------|--------|---------|
-| `rimchat_diplomacy` | GameComponent_DiplomacyManager.dialogueSessions（反射） | StaticProvider | PriorityAuxiliary | pullDiplomacyHistory |
-| `rimchat_rpg_history` | RpgNpcDialogueArchiveManager._archiveCache（反射） | PawnContextProvider | PriorityMemory | pullRpgHistory |
-
-所有 Provider 注册时使用 ModId `"RimMind.BridgeRimChat"`，卸载时通过 `UnregisterModProviders` 一次性清理。
-
-### BridgeRimChatSettings
-
-```csharp
-class BridgeRimChatSettings : ModSettings {
-    // 对话门控
-    bool enableDialogueGate;          // 默认 true
-    bool skipPlayerDialogue;          // 默认 true
-    bool forceRimMindPlayerDialogue;  // 默认 false
-
-    // 动作门控
-    bool enableActionGate;            // 默认 true
-    bool skipDiplomacyActions;        // 默认 true（跳过 adjust_faction, trigger_incident）
-    bool skipTriggerIncident;         // 默认 true（跳过 Storyteller 事件触发）
-    bool skipSocialActions;           // 默认 false（跳过 romance_accept, romance_breakup）
-    bool skipRecruitAgree;            // 默认 false（跳过 recruit_agree）
-    int incidentCooldownTicks;        // 默认 60000（1 游戏天），Slider 6000~180000，步进 1500
-    bool forceRimMindActions;         // 默认 false（仅影响 RimMind-Actions，不影响 Storyteller）
-
-    // 上下文拉取
-    bool enableContextPull;           // 默认 true
-    bool pullDiplomacyHistory;        // 默认 true
-    bool pullRpgHistory;              // 默认 false
-
-    static BridgeRimChatSettings Get();
-    static void DrawSettingsContent(Rect inRect);
-}
-```
-
-## 数据流
-
-```
-RimChat 对话数据                    RimMind 上下文系统
-┌──────────────────┐               ┌──────────────────┐
-│ 外交对话历史      │──反射读取──→ │ rimchat_diplomacy (Static)
-│ RPG对话历史       │──反射读取──→ │ rimchat_rpg_history (Pawn)
-└──────────────────┘               └──────────────────┘
-
-RimMind-Dialogue 触发  ──DialogueGate──→  跳过/放行
-RimMind-Actions 执行   ──ActionGate────→  跳过/放行
-RimMind-Storyteller    ──ActionGate────→  跳过/放行（含冷却）
-```
-
-## 初始化流程
-
-```
-RimMindBridgeRimChatMod 构造函数
-    │
-    ├── GetSettings<BridgeRimChatSettings>()
-    ├── Harmony("mcocdaa.RimMindBridgeRimChat").PatchAll()
-    ├── RimMindAPI.RegisterSettingsTab("bridge_rimchat", ...)
-    │
-    ├── RimChatDetector.IsRimChatActive?
-    │       │
-    │       ├── No  → Log + 跳过所有桥接模块
-    │       │
-    │       └── Yes → DialogueGate.RegisterSkipChecks()
-    │               ActionGate.Register()
-    │               ContextPullBridge.Register()
-```
-
-## 代码约定
-
-### 命名空间
-
-| 命名空间 | 目录 | 职责 |
-|---------|------|------|
-| `RimMind.Bridge.RimChat` | Source/ 根目录 | Mod 入口 |
-| `RimMind.Bridge.RimChat.Bridge` | Bridge/ | 桥接模块 |
-| `RimMind.Bridge.RimChat.Cooldown` | Cooldown/ | 冷却管理 |
-| `RimMind.Bridge.RimChat.Detection` | Detection/ | RimChat 检测 |
-| `RimMind.Bridge.RimChat.Settings` | Settings/ | 设置 |
-
-### ModId
-
-所有 RimMindAPI 注册使用统一 ModId：`"RimMind.BridgeRimChat"`
-
-### Harmony
-
-- Harmony ID：`mcocdaa.RimMindBridgeRimChat`
-- 当前无 Harmony Patch（预留）
-
-### 构建
-
-| 配置项 | 值 |
-|--------|-----|
-| 目标框架 | `net48` |
-| C# 语言版本 | 9.0 |
-| Nullable | enable |
-| RimWorld 版本 | 1.6 |
-| 输出路径 | `../1.6/Assemblies/` |
-| 部署 | 设置 `RIMWORLD_DIR` 环境变量后自动部署 |
-| NuGet 依赖 | `Krafs.Rimworld.Ref 1.6.*-*`, `Lib.Harmony.Ref 2.*`, `Newtonsoft.Json 13.0.*` |
-| 编译期引用 | RimMindCore, RimMindDialogue, RimMindPersonality, RimMindMemory, RimMindStoryteller, RimMindAdvisor, RimMindActions（均为 Private=false） |
-| 无编译期引用 | RimChat（纯反射读取，不调用 RimChat API） |
-
-### 加载顺序
-
-```
-Harmony → yancy.rimchat → RimMind-Core → RimMind 子模组 → RimMind-Bridge-RimChat
-```
-
-### UI 本地化
-
-所有 UI 文本通过 `Languages/ChineseSimplified/Keyed/RimMind_BridgeRimChat.xml` 和 `Languages/English/Keyed/RimMind_BridgeRimChat.xml` 的 Keyed 翻译，禁止硬编码中文。
-
-翻译键共 31 个，覆盖 3 个设置分区（DialogueGate / ActionGate / ContextPull）+ Mod 入口。
-
-### 设置 UI
-
-通过 `RimMindAPI.RegisterSettingsTab` 注册到 Core 的多分页设置界面，Tab 标签为 "Bridge (RimChat)"。使用 `SettingsUIHelper` 辅助工具类绘制。
-
-设置项条件嵌套：
-- `skipPlayerDialogue` 仅在 `enableDialogueGate` 为 true 时显示
-- `forceRimMindPlayerDialogue` 仅在 `enableDialogueGate && skipPlayerDialogue` 为 true 时显示
-- 4 个 skip 选项 + `forceRimMindActions` 仅在 `enableActionGate` 为 true 时显示
-- `incidentCooldownTicks` 滑块仅在 `enableActionGate && skipTriggerIncident` 为 true 时显示
-- `pullDiplomacyHistory` / `pullRpgHistory` 仅在 `enableContextPull` 为 true 时显示
-
-## 与 RimTalk Bridge 的区别
-
-| 特性 | RimChat Bridge | RimTalk Bridge |
-|------|---------------|----------------|
-| 目标模组 | RimChat (`yancy.rimchat`) | RimTalk (`cj.rimtalk`) |
-| 对话门控 | 仅 PlayerInput | Chitchat + Auto + PlayerInput |
-| 动作门控 | 有（外交/社交/招募/叙事者事件） | 无 |
-| 事件冷却 | 有（SharedIncidentCooldown） | 无 |
-| 上下文推送 | 无（RimChat 无公开API） | 有（变量/PromptEntry/Hook） |
-| 上下文拉取 | 有（反射读取外交/RPG对话历史） | 有（反射读取对话历史） |
-| RimChat API 调用 | 无（仅检测激活状态+反射读取数据） | 有（反射调用 RimTalkPromptAPI） |
-| 人格推送 | 无 | 有（PersonaPushBridge + Hook） |
-
-## 扩展指南
-
-### 新增动作门控
-
-1. 在 `ActionGate` 中添加动作 ID 到对应 HashSet，或新增 HashSet
-2. 在 `BridgeRimChatSettings` 中添加对应开关
-3. 在语言文件中添加翻译键
-4. 更新 `EstimateHeight` 中的高度计算
-
-### 新增上下文拉取
-
-1. 在 `ContextPullBridge` 中添加反射读取方法
-2. 使用 `RimMindAPI.RegisterPawnContextProvider` 或 `RegisterStaticProvider` 注册
-3. 在 `BridgeRimChatSettings` 中添加对应开关
-4. 在语言文件中添加翻译键
-
-### 新增对话门控类型
-
-1. 在 `DialogueGate.ShouldSkipDialogue` 中添加 triggerType 分支
-2. 在 `BridgeRimChatSettings` 中添加对应开关
-3. 在语言文件中添加翻译键
-4. 更新 `EstimateHeight` 中的高度计算
+修改动作分类、冷却默认值（60000）、RimChat 类型名、新增 ContextPush
+或新持久化字段前先确认。禁止对 RimChat 添加编译期引用。
