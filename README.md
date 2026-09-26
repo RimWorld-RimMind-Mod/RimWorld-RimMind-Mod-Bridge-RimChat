@@ -43,13 +43,6 @@ graph TD
     Core --> BridgeRimTalk["Bridge-RimTalk"]
 ```
 
-## 🎮 实机特性展示 / In-Game Showcase
-
-![RimMind-Bridge-RimChat In-Game Showcase](docs/images/showcase.jpg)
-
-- **门控互斥保护**：当 RimChat 激活时，智能接管并避免重复闲聊、外交冲突与动作重叠，保证共存环境下的稳定性。
-- **跨模组上下文桥接**：将 RimChat 的外交记录与 RPG 对话历史安全无缝拉取至 RimMind 4-Zone 上下文，增强角色连续记忆。
-
 ## 安装步骤
 
 ### 从源码安装
@@ -217,13 +210,6 @@ RimChat is another popular RimWorld AI dialogue mod with diplomacy and RPG dialo
 | **RimMind-Bridge-RimChat** | **Coordination & mutual exclusion layer with RimChat mod** | **Core, RimChat** | [Link](https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Bridge-RimChat) |
 | RimMind-Bridge-RimTalk | Dialogue bubbles & context bridge with RimTalk mod | Core, RimTalk | [Link](https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Bridge-RimTalk) |
 | RimMind-Extension-ModelService | Extended model gateway, OpenCode Go subscription & multi-endpoint load balancing | Core | [Link](https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Extension-ModelService) |
-
-## 🎮 In-Game Showcase / Feature Demonstration
-
-![RimMind-Bridge-RimChat In-Game Showcase](docs/images/showcase.jpg)
-
-- **Mutual Exclusion Gating**: Automatically gates repetitive small talk, duplicate diplomacy actions, and redundant social executions when RimChat is loaded concurrently.
-- **Cross-Mod Context Bridging**: Seamlessly ingests RimChat diplomatic records and RPG transcripts into RimMind's 4-Zone context architecture, preserving conversational continuity.
 
 ## Installation
 
