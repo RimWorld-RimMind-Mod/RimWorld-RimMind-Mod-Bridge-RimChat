@@ -92,11 +92,9 @@ namespace RimMind.Bridge.RimChat.Settings
                     "RimMind.BridgeRimChat.Settings.SkipRecruitAgree.Desc".Translate());
                 if (s.skipTriggerIncident)
                 {
-                    listing.Label("  " + "RimMind.BridgeRimChat.Settings.IncidentCooldown".Translate($"{s.incidentCooldownTicks / 60000f:F1}"));
-                    GUI.color = Color.gray;
-                    listing.Label("    " + "RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc".Translate());
-                    GUI.color = Color.white;
-                    s.incidentCooldownTicks = (int)listing.Slider(s.incidentCooldownTicks, 6000f, 180000f);
+                    string incidentTip = "RimMind.BridgeRimChat.Settings.IncidentCooldown.Desc".Translate();
+                    listing.LabelWithTooltip("  " + "RimMind.BridgeRimChat.Settings.IncidentCooldown".Translate($"{s.incidentCooldownTicks / 60000f:F1}"), incidentTip);
+                    s.incidentCooldownTicks = (int)listing.SliderWithTooltip(s.incidentCooldownTicks, 6000f, 180000f, incidentTip);
                     s.incidentCooldownTicks = (s.incidentCooldownTicks / 1500) * 1500;
                 }
                 listing.CheckboxLabeled("RimMind.BridgeRimChat.Settings.ForceRimMindActions".Translate(),
@@ -145,7 +143,7 @@ namespace RimMind.Bridge.RimChat.Settings
             h += 24f + 24f;
             h += 24f + 24f;
             if (s.enableActionGate)
-                h += 24f * 4 + (s.skipTriggerIncident ? 24f + 24f + 32f : 0f) + 24f;
+                h += 24f * 4 + (s.skipTriggerIncident ? 24f + 32f : 0f) + 24f;
             h += 24f + 24f;
             if (s.enableContextPull)
                 h += 24f * 2;

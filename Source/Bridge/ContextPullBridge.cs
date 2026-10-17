@@ -123,25 +123,9 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }, ModId, stalenessTicks: 3000, invalidationTriggers: new[] { "RimChatEvent" }));
         }
 
-        /// <summary>
-        /// 根据 thingIDNumber 在所有可能位置查找 Pawn。
-        /// 先查世界 pawns（已退役/待招募/世界地图上的 pawn），
-        /// 再遍历所有地图的 FreeColonists（含非当前地图的殖民者）。
-        /// </summary>
         internal static Pawn? TryFindPawnById(int pawnId)
         {
-            // 1. 查世界 pawns（已退役/待招募/世界地图上的 pawn）
-            var pawn = Find.WorldPawns.AllPawnsAlive.FirstOrDefault(p => p.thingIDNumber == pawnId);
-            if (pawn != null) return pawn;
-
-            // 2. 遍历所有地图的 colonists（含非当前地图）
-            foreach (var map in Find.Maps)
-            {
-                pawn = map.mapPawns?.FreeColonists.FirstOrDefault(p => p.thingIDNumber == pawnId);
-                if (pawn != null) return pawn;
-            }
-
-            return null;
+            return RimMindPawnLookup.FindPawnByNumber(pawnId);
         }
 
         private static string? BuildRpgContext(Pawn pawn)
