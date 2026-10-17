@@ -119,6 +119,7 @@ namespace Verse
 
     public static class StringTranslateExtensions
     {
+        public static bool CanTranslate(this string s) => true;
         public static string Translate(this string s) => s;
     }
 }
