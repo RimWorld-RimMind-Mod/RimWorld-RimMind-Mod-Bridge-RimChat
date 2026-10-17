@@ -9,7 +9,9 @@ namespace RimMind.Bridge.RimChat
     {
         public string Id => "bridge_rimchat";
         public string OwnerModId => "RimMindBridgeRimChat";
-        public string Label => "RimMind.BridgeRimChat.Settings.TabLabel".Translate();
+        public string Label => "RimMind.BridgeRimChat.Settings.TabLabel".CanTranslate()
+            ? (string)"RimMind.BridgeRimChat.Settings.TabLabel".Translate()
+            : "RimChat Bridge";
         public void Draw(Rect rect) => BridgeRimChatSettings.DrawSettingsContent(rect);
     }
 }
