@@ -118,14 +118,15 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
         public void Pawn_lookup_preserves_world_and_all_map_boundaries()
         {
             ContractCaseRunner.Run(
-                ("world pawns are resolved before map pawns", () =>
+                ("active map colonists are resolved without scanning world pawns", () =>
                 {
                     ResetPawnSources();
                     var worldPawn = new Verse.Pawn { thingIDNumber = 41 };
+                    var mapPawn = new Verse.Pawn { thingIDNumber = 41 };
                     Verse.Find.WorldPawns.AllPawnsAlive.Add(worldPawn);
-                    Verse.Find.Maps.Add(MapWith(new Verse.Pawn { thingIDNumber = 41 }));
+                    Verse.Find.Maps.Add(MapWith(mapPawn));
 
-                    Assert.Same(worldPawn, ContextPullBridge.TryFindPawnById(41));
+                    Assert.Same(mapPawn, ContextPullBridge.TryFindPawnById(41));
                 }),
                 ("colonists on non-current maps remain visible", () =>
                 {

@@ -47,7 +47,7 @@ RimMind 与 RimChat 的对话/动作门控、上下文拉取桥。仅编译依�
 | `rimchat_diplomacy` | 外交会话，world-level | `pullDiplomacyHistory` |
 | `rimchat_rpg_history` | Pawn RPG 历史 | `pullRpgHistory` |
 
-Pawn 解析复用 `TryFindPawnById`，覆盖世界 pawns 和所有地图，不只当前地图。
+Pawn 解析复用 `TryFindPawnById`（委托 `RimMindPawnLookup.FindPawnByNumber`），覆盖所有地图与远行队中的存活殖民者，禁止无界扫描 `WorldPawns.AllPawnsAlive`。
 Context、门控与事件通知均经过 Core 公共边界。
 
 ## 验证

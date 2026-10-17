@@ -312,6 +312,20 @@ namespace RimMind.Presentation.Api
             public T? FindById(string id) => _items.Find(x => x.Id == id);
         }
     }
+
+    public static class RimMindPawnLookup
+    {
+        public static Verse.Pawn? FindPawnByNumber(int num)
+        {
+            if (num <= 0) return null;
+            foreach (var map in Verse.Find.Maps)
+            {
+                var pawn = map.mapPawns?.FreeColonists.FirstOrDefault(p => p.thingIDNumber == num);
+                if (pawn != null) return pawn;
+            }
+            return null;
+        }
+    }
 }
 
 // ISettingsTab 真实定义在 RimMind.Presentation.Settings（Core 的 Presentation 层），
