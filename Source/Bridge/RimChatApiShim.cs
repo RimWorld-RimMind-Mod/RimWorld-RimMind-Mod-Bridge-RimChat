@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Reflection;
 using HarmonyLib;
 using RimMind.Domain.ValueObjects;
@@ -17,6 +18,15 @@ namespace RimMind.Bridge.RimChat.Bridge
         private static Type? _rpgArchiveManagerType;
         private static bool _resolved;
 
+        private static readonly ConcurrentDictionary<(Type Type, string Name, BindingFlags Flags), PropertyInfo?> _propertyCache =
+            new ConcurrentDictionary<(Type Type, string Name, BindingFlags Flags), PropertyInfo?>();
+
+        private static readonly ConcurrentDictionary<(Type Type, string Name, BindingFlags Flags), FieldInfo?> _fieldCache =
+            new ConcurrentDictionary<(Type Type, string Name, BindingFlags Flags), FieldInfo?>();
+
+        private static readonly ConcurrentDictionary<string, byte> _warnedMissingMembers =
+            new ConcurrentDictionary<string, byte>(StringComparer.Ordinal);
+
         internal static void ConfigureTypesForTesting(
             Type? apiType,
             Type? diplomacyManagerType,
@@ -26,6 +36,17 @@ namespace RimMind.Bridge.RimChat.Bridge
             _diplomacyManagerType = diplomacyManagerType;
             _rpgArchiveManagerType = rpgArchiveManagerType;
             _resolved = true;
+            _propertyCache.Clear();
+            _fieldCache.Clear();
+            _warnedMissingMembers.Clear();
+        }
+
+        private static void WarnOnce(string key, string message)
+        {
+            if (_warnedMissingMembers.TryAdd(key, 1))
+            {
+                RimMindErrors.Warn(message);
+            }
         }
 
         private static void EnsureResolved()
@@ -66,6 +87,38 @@ namespace RimMind.Bridge.RimChat.Bridge
             get { EnsureResolved(); return _rpgArchiveManagerType; }
         }
 
+        public static PropertyInfo? GetCachedProperty(Type type, string propertyName,
+            BindingFlags flags = BindingFlags.Public | BindingFlags.Static)
+        {
+            if (type == null || string.IsNullOrEmpty(propertyName)) return null;
+            var prop = _propertyCache.GetOrAdd(
+                (type, propertyName, flags),
+                static k => k.Type.GetProperty(k.Name, k.Flags));
+            if (prop == null)
+            {
+                WarnOnce(
+                    $"prop:{type.FullName}:{propertyName}:{flags}",
+                    $"[RimMind-Bridge-RimChat] Property '{propertyName}' not found on {type.Name}.");
+            }
+            return prop;
+        }
+
+        public static FieldInfo? GetCachedField(Type type, string fieldName,
+            BindingFlags flags = BindingFlags.Public | BindingFlags.Instance)
+        {
+            if (type == null || string.IsNullOrEmpty(fieldName)) return null;
+            var field = _fieldCache.GetOrAdd(
+                (type, fieldName, flags),
+                static k => k.Type.GetField(k.Name, k.Flags));
+            if (field == null)
+            {
+                WarnOnce(
+                    $"field:{type.FullName}:{fieldName}:{flags}",
+                    $"[RimMind-Bridge-RimChat] Field '{fieldName}' not found on {type.Name}.");
+            }
+            return field;
+        }
+
         public static object? GetStaticPropertyValue(Type type, string propertyName)
         {
             if (type == null)
@@ -76,12 +129,8 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             try
             {
-                var prop = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
-                if (prop == null)
-                {
-                    RimMindErrors.Warn($"[RimMind-Bridge-RimChat] Static property '{propertyName}' not found on {type.Name}.");
-                    return null;
-                }
+                var prop = GetCachedProperty(type, propertyName, BindingFlags.Public | BindingFlags.Static);
+                if (prop == null) return null;
                 return prop.GetValue(null);
             }
             catch (Exception ex)
@@ -102,12 +151,8 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             try
             {
-                var field = instance.GetType().GetField(fieldName, flags);
-                if (field == null)
-                {
-                    RimMindErrors.Warn($"[RimMind-Bridge-RimChat] Field '{fieldName}' not found on {instance.GetType().Name}.");
-                    return null;
-                }
+                var field = GetCachedField(instance.GetType(), fieldName, flags);
+                if (field == null) return null;
                 return field.GetValue(instance);
             }
             catch (Exception ex)

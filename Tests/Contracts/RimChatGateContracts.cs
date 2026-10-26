@@ -148,6 +148,38 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     settings.forceRimMindActions = true;
 
                     Assert.True(ActionGate.ShouldSkipStorytellerIncident());
+                }),
+                ("detector caches active probe for 6000 ticks and listener respects gate settings", () =>
+                {
+                    int probeCount = 0;
+                    Verse.Find.TickManager.TicksGame = 1000;
+                    RimChatDetector.UseActiveProbeForTesting(_ =>
+                    {
+                        probeCount++;
+                        return true;
+                    });
+
+                    Assert.True(RimChatDetector.IsRimChatActive);
+                    Assert.True(RimChatDetector.IsRimChatActive);
+                    Verse.Find.TickManager.TicksGame = 6999;
+                    Assert.True(RimChatDetector.IsRimChatActive);
+                    Assert.Equal(1, probeCount);
+
+                    Verse.Find.TickManager.TicksGame = 7001;
+                    Assert.True(RimChatDetector.IsRimChatActive);
+                    Assert.Equal(2, probeCount);
+
+                    ResetCooldown(10000);
+                    var settings = BridgeRimChatSettings.Get();
+                    settings.enableActionGate = true;
+                    settings.skipTriggerIncident = false;
+                    var listener = new RimChatIncidentExecutedListener();
+                    listener.OnIncidentExecuted();
+                    Assert.False(SharedIncidentCooldown.IsOnCooldown(60000));
+
+                    settings.skipTriggerIncident = true;
+                    listener.OnIncidentExecuted();
+                    Assert.True(SharedIncidentCooldown.IsOnCooldown(60000));
                 }));
         }
 

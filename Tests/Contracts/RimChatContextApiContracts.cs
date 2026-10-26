@@ -74,12 +74,21 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
 
                     Assert.Empty(RimMind.Presentation.Api.RimMindAPI.Context.ContextKeys.GetAll());
                 }),
-                ("registered diplomacy provider projects bounded real history", async () =>
+                ("registered diplomacy provider projects most recent 3 sessions and separates header with newline", () =>
                 {
                     BridgeRimChatSettings settings = ResetContext(active: true);
                     settings.pullDiplomacyHistory = true;
                     settings.pullRpgHistory = false;
                     DiplomacyManagerProbe.Instance.dialogueSessions.Clear();
+                    DiplomacyManagerProbe.Instance.dialogueSessions.Add(
+                        new DiplomacySessionProbe
+                        {
+                            faction = "OldestFaction",
+                            messages = new ArrayList
+                            {
+                                new DiplomacyMessageProbe { sender = "Old", message = "should be skipped" }
+                            }
+                        });
                     DiplomacyManagerProbe.Instance.dialogueSessions.Add(
                         new DiplomacySessionProbe
                         {
@@ -93,6 +102,24 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                                 new DiplomacyMessageProbe { sender = "player", message = "four", isPlayer = true }
                             }
                         });
+                    DiplomacyManagerProbe.Instance.dialogueSessions.Add(
+                        new DiplomacySessionProbe
+                        {
+                            faction = "Empire",
+                            messages = new ArrayList
+                            {
+                                new DiplomacyMessageProbe { sender = "Consul", message = "greetings" }
+                            }
+                        });
+                    DiplomacyManagerProbe.Instance.dialogueSessions.Add(
+                        new DiplomacySessionProbe
+                        {
+                            faction = "Tribe",
+                            messages = new ArrayList
+                            {
+                                new DiplomacyMessageProbe { sender = "Chief", message = "peace" }
+                            }
+                        });
                     RimChatApiShim.ConfigureTypesForTesting(
                         apiType: null,
                         diplomacyManagerType: typeof(DiplomacyManagerProbe),
@@ -102,12 +129,16 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     var meta = Assert.Single(
                         RimMind.Presentation.Api.RimMindAPI.Context.ContextKeys.GetAll());
                     var def = Assert.IsType<ContextProviderDef>(meta.Def);
-                    string? projected = await def.Provider(
+                    string? projected = def.Provider(
                         new ProviderContext("contract", "trace"),
-                        CancellationToken.None);
+                        CancellationToken.None).GetAwaiter().GetResult();
 
-                    Assert.Contains("[RimChat Diplomacy]", projected);
+                    Assert.NotNull(projected);
+                    Assert.StartsWith("[RimChat Diplomacy]" + Environment.NewLine + "## Outlanders", projected);
+                    Assert.DoesNotContain("OldestFaction", projected);
                     Assert.Contains("## Outlanders", projected);
+                    Assert.Contains("## Empire", projected);
+                    Assert.Contains("## Tribe", projected);
                     Assert.DoesNotContain("discarded", projected);
                     Assert.Contains("[Player] four", projected);
                     Assert.Contains("...", projected);
@@ -138,6 +169,17 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
 
                     Assert.Same(otherMapPawn, ContextPullBridge.TryFindPawnById(42));
                 }),
+                ("inactive or prisoner pawns are rejected", () =>
+                {
+                    ResetPawnSources();
+                    var deadPawn = new Verse.Pawn { thingIDNumber = 50, Dead = true };
+                    var prisonerPawn = new Verse.Pawn { thingIDNumber = 51, IsPrisoner = true };
+                    Verse.Find.Maps.Add(MapWith(deadPawn));
+                    Verse.Find.Maps.Add(MapWith(prisonerPawn));
+
+                    Assert.Null(ContextPullBridge.TryFindPawnById(50));
+                    Assert.Null(ContextPullBridge.TryFindPawnById(51));
+                }),
                 ("unknown pawn id has no projected context target", () =>
                 {
                     ResetPawnSources();
@@ -160,7 +202,7 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                         ManagerProbe.Instance,
                         RimChatApiShim.TryGetManagerInstance(typeof(ManagerProbe)));
                 }),
-                ("public and private instance fields honor binding flags", () =>
+                ("public and private instance fields honor binding flags and cache FieldInfo", () =>
                 {
                     var probe = new FieldProbe();
 
@@ -173,6 +215,9 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                             probe,
                             "_privateValue",
                             BindingFlags.NonPublic | BindingFlags.Instance));
+                    Assert.Same(
+                        RimChatApiShim.GetCachedField(typeof(FieldProbe), "PublicValue"),
+                        RimChatApiShim.GetCachedField(typeof(FieldProbe), "PublicValue"));
                 }),
                 ("missing reflection members fail closed", () =>
                 {
