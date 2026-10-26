@@ -17,9 +17,14 @@ namespace RimMind.Bridge.RimChat.Bridge
     public static class ContextPullBridge
     {
         private const string ModId = "RimMindBridgeRimChat";
+        private static bool _diplomacyDisabled;
+        private static bool _rpgDisabled;
 
         public static void Register()
         {
+            _diplomacyDisabled = false;
+            _rpgDisabled = false;
+
             if (!RimChatDetector.IsRimChatActive) return;
 
             var settings = BridgeRimChatSettings.Get();
@@ -38,13 +43,17 @@ namespace RimMind.Bridge.RimChat.Bridge
                 "rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
                 async (ctx, ct) =>
                 {
-                    return BuildDiplomacyContext();
+                    if (!RimChatDetector.IsRimChatActive || _diplomacyDisabled) return null;
+                    return await RimMindAPI.MainThreadSnapshot.GetAsync<string?>(
+                        () => BuildDiplomacyContext(),
+                        null,
+                        ct: ct).ConfigureAwait(false);
                 }, ModId, stalenessTicks: 1500, invalidationTriggers: new[] { "RimChatEvent" }));
         }
 
         private static string? BuildDiplomacyContext()
         {
-            if (!RimChatDetector.IsRimChatActive) return null;
+            if (!RimChatDetector.IsRimChatActive || _diplomacyDisabled) return null;
 
             try
             {
@@ -54,18 +63,27 @@ namespace RimMind.Bridge.RimChat.Bridge
                 var sessions = RimChatApiShim.GetInstanceFieldValue(manager, "dialogueSessions") as IList;
                 if (sessions == null || sessions.Count == 0) return null;
 
-                var sb = new StringBuilder("[RimChat Diplomacy]");
+                var sb = new StringBuilder();
+                sb.AppendLine("[RimChat Diplomacy]");
                 int sessionCount = 0;
-                foreach (var session in sessions)
+                int startSessionIdx = System.Math.Max(0, sessions.Count - 3);
+                for (int si = startSessionIdx; si < sessions.Count; si++)
                 {
                     if (sessionCount >= 3) break;
+                    var session = sessions[si];
+                    if (session == null) continue;
 
-                    var factionField = session.GetType().GetField("faction",
+                    var sessionType = session.GetType();
+                    var factionField = RimChatApiShim.GetCachedField(sessionType, "faction",
                         BindingFlags.Public | BindingFlags.Instance);
-                    var messagesField = session.GetType().GetField("messages",
+                    var messagesField = RimChatApiShim.GetCachedField(sessionType, "messages",
                         BindingFlags.Public | BindingFlags.Instance);
 
-                    if (factionField == null || messagesField == null) continue;
+                    if (factionField == null || messagesField == null)
+                    {
+                        _diplomacyDisabled = true;
+                        return null;
+                    }
 
                     var faction = factionField.GetValue(session);
                     var messages = messagesField.GetValue(session) as IList;
@@ -81,14 +99,19 @@ namespace RimMind.Bridge.RimChat.Bridge
                         if (msgCount >= 4) break;
                         var msg = messages[i];
                         if (msg == null) continue;
-                        var senderField = msg.GetType().GetField("sender",
+                        var msgType = msg.GetType();
+                        var senderField = RimChatApiShim.GetCachedField(msgType, "sender",
                             BindingFlags.Public | BindingFlags.Instance);
-                        var messageField = msg.GetType().GetField("message",
+                        var messageField = RimChatApiShim.GetCachedField(msgType, "message",
                             BindingFlags.Public | BindingFlags.Instance);
-                        var isPlayerField = msg.GetType().GetField("isPlayer",
+                        var isPlayerField = RimChatApiShim.GetCachedField(msgType, "isPlayer",
                             BindingFlags.Public | BindingFlags.Instance);
 
-                        if (senderField == null || messageField == null) continue;
+                        if (senderField == null || messageField == null)
+                        {
+                            _diplomacyDisabled = true;
+                            return null;
+                        }
 
                         string sender = senderField.GetValue(msg)?.ToString() ?? "?";
                         string content = messageField.GetValue(msg)?.ToString() ?? "";
@@ -116,21 +139,25 @@ namespace RimMind.Bridge.RimChat.Bridge
                 "rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
                 async (ctx, ct) =>
                 {
-                    if (ctx.PawnId <= 0) return null;
-                    var pawn = TryFindPawnById(ctx.PawnId);
-                    if (pawn == null) return null;
-                    return BuildRpgContext(pawn);
+                    if (ctx.PawnId <= 0 || !RimChatDetector.IsRimChatActive || _rpgDisabled) return null;
+                    return await RimMindAPI.MainThreadSnapshot.GetAsync<string?>(() =>
+                    {
+                        var pawn = TryFindPawnById(ctx.PawnId);
+                        if (pawn == null) return null;
+                        return BuildRpgContext(pawn);
+                    }, null, ct: ct).ConfigureAwait(false);
                 }, ModId, stalenessTicks: 3000, invalidationTriggers: new[] { "RimChatEvent" }));
         }
 
         internal static Pawn? TryFindPawnById(int pawnId)
         {
-            return RimMindPawnLookup.FindPawnByNumber(pawnId);
+            var pawn = RimMindPawnLookup.FindPawnByNumber(pawnId);
+            return RimMindPawnLookup.IsActiveSpawnedColonist(pawn) ? pawn : null;
         }
 
         private static string? BuildRpgContext(Pawn pawn)
         {
-            if (!RimChatDetector.IsRimChatActive) return null;
+            if (!RimChatDetector.IsRimChatActive || _rpgDisabled) return null;
 
             try
             {
@@ -147,32 +174,40 @@ namespace RimMind.Bridge.RimChat.Bridge
                     var archiveCandidate = entry.Value;
                     if (archiveCandidate == null) continue;
 
-                    var pawnLoadIdField = archiveCandidate.GetType().GetField("PawnLoadId",
+                    var pawnLoadIdField = RimChatApiShim.GetCachedField(archiveCandidate.GetType(), "PawnLoadId",
                         BindingFlags.Public | BindingFlags.Instance);
-                    if (pawnLoadIdField != null)
+                    if (pawnLoadIdField == null)
                     {
-                        var archivePawnIdValue = pawnLoadIdField.GetValue(archiveCandidate);
-                        if (archivePawnIdValue == null) continue;
+                        _rpgDisabled = true;
+                        return null;
+                    }
 
-                        int archivePawnId = System.Convert.ToInt32(archivePawnIdValue);
-                        if (archivePawnId == pawn.thingIDNumber)
-                        {
-                            archive = archiveCandidate;
-                            break;
-                        }
+                    var archivePawnIdValue = pawnLoadIdField.GetValue(archiveCandidate);
+                    if (archivePawnIdValue == null) continue;
+
+                    int archivePawnId = System.Convert.ToInt32(archivePawnIdValue);
+                    if (archivePawnId == pawn.thingIDNumber)
+                    {
+                        archive = archiveCandidate;
+                        break;
                     }
                 }
 
                 if (archive == null) return null;
 
-                var sessionsField = archive.GetType().GetField("Sessions",
+                var sessionsField = RimChatApiShim.GetCachedField(archive.GetType(), "Sessions",
                     BindingFlags.Public | BindingFlags.Instance);
-                if (sessionsField == null) return null;
+                if (sessionsField == null)
+                {
+                    _rpgDisabled = true;
+                    return null;
+                }
 
                 var sessions = sessionsField.GetValue(archive) as IList;
                 if (sessions == null || sessions.Count == 0) return null;
 
-                var sb = new StringBuilder("[RimChat RPG History]");
+                var sb = new StringBuilder();
+                sb.AppendLine("[RimChat RPG History]");
                 int sessionCount = 0;
                 for (int si = sessions.Count - 1; si >= 0; si--)
                 {
@@ -180,9 +215,13 @@ namespace RimMind.Bridge.RimChat.Bridge
 
                     var session = sessions[si];
                     if (session == null) continue;
-                    var turnsField = session.GetType().GetField("Turns",
+                    var turnsField = RimChatApiShim.GetCachedField(session.GetType(), "Turns",
                         BindingFlags.Public | BindingFlags.Instance);
-                    if (turnsField == null) continue;
+                    if (turnsField == null)
+                    {
+                        _rpgDisabled = true;
+                        return null;
+                    }
 
                     var turns = turnsField.GetValue(session) as IList;
                     if (turns == null || turns.Count == 0) continue;
@@ -195,14 +234,19 @@ namespace RimMind.Bridge.RimChat.Bridge
                         var turn = turns[ti];
                         if (turn == null) continue;
 
-                        var isPlayerField = turn.GetType().GetField("IsPlayer",
+                        var turnType = turn.GetType();
+                        var isPlayerField = RimChatApiShim.GetCachedField(turnType, "IsPlayer",
                             BindingFlags.Public | BindingFlags.Instance);
-                        var speakerField = turn.GetType().GetField("SpeakerName",
+                        var speakerField = RimChatApiShim.GetCachedField(turnType, "SpeakerName",
                             BindingFlags.Public | BindingFlags.Instance);
-                        var textField = turn.GetType().GetField("Text",
+                        var textField = RimChatApiShim.GetCachedField(turnType, "Text",
                             BindingFlags.Public | BindingFlags.Instance);
 
-                        if (textField == null) continue;
+                        if (textField == null)
+                        {
+                            _rpgDisabled = true;
+                            return null;
+                        }
 
                         bool isPlayer = isPlayerField?.GetValue(turn) is bool playerTurn && playerTurn;
                         string speaker = speakerField?.GetValue(turn)?.ToString() ?? "?";
@@ -232,6 +276,8 @@ namespace RimMind.Bridge.RimChat.Bridge
 
         public static void Unregister()
         {
+            _diplomacyDisabled = false;
+            _rpgDisabled = false;
             RimMindAPI.Context.ContextKeys.Unregister("rimchat_diplomacy");
             RimMindAPI.Context.ContextKeys.Unregister("rimchat_rpg_history");
         }

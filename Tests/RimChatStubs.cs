@@ -21,6 +21,10 @@ namespace Verse
     public class Pawn
     {
         public int thingIDNumber;
+        public bool Dead;
+        public bool Destroyed;
+        public bool Spawned = true;
+        public bool IsPrisoner;
     }
 
     public static class Find
@@ -250,6 +254,16 @@ namespace RimMind.Presentation.Api
         public static int ContextRegisterCount { get; set; }
         public static int ContextUnregisterCount { get; set; }
 
+        public static class MainThreadSnapshot
+        {
+            public static System.Threading.Tasks.Task<T> GetAsync<T>(
+                System.Func<T> readOnMainThread,
+                T fallback = default!,
+                System.TimeSpan? timeout = null,
+                System.Threading.CancellationToken ct = default)
+                => System.Threading.Tasks.Task.FromResult(readOnMainThread != null ? readOnMainThread() : fallback);
+        }
+
         public static IExtensionRegistry<T> Extensions<T>() where T : class, IExtension
             => new StubRegistry<T>();
 
@@ -324,6 +338,11 @@ namespace RimMind.Presentation.Api
                 if (pawn != null) return pawn;
             }
             return null;
+        }
+
+        public static bool IsActiveSpawnedColonist(Verse.Pawn? pawn)
+        {
+            return pawn != null && !pawn.Dead && !pawn.Destroyed && pawn.Spawned && !pawn.IsPrisoner;
         }
     }
 }

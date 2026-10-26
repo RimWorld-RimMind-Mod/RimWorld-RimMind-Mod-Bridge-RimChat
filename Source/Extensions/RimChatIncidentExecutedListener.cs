@@ -6,6 +6,12 @@ namespace RimMind.Bridge.RimChat
     {
         public string Id => "rimchat_bridge_incident";
         public string OwnerModId => "RimMindBridgeRimChat";
-        public void OnIncidentExecuted() => Cooldown.SharedIncidentCooldown.RecordIncident();
+        public void OnIncidentExecuted()
+        {
+            if (!Detection.RimChatDetector.IsRimChatActive) return;
+            var settings = Settings.BridgeRimChatSettings.Get();
+            if (!settings.enableActionGate || !settings.skipTriggerIncident) return;
+            Cooldown.SharedIncidentCooldown.RecordIncident();
+        }
     }
 }
