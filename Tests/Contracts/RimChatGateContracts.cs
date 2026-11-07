@@ -1,3 +1,5 @@
+using RimMind.Application.Common.Constants;
+using RimMind.Application.Common.Interfaces.Extension;
 using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Cooldown;
 using RimMind.Bridge.RimChat.Detection;
@@ -49,6 +51,19 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
 
                     Assert.False(DialogueGate.ShouldSkipDialogue(null, "PlayerInput"));
                     Assert.False(DialogueGate.ShouldSkipFloatMenuOption());
+                }),
+                ("shared DialogueTriggerKinds constants match DialogueGate switch arms", () =>
+                {
+                    var settings = Reset(active: true);
+                    settings.enableChitchatGate = true;
+                    settings.enableAutoGate = true;
+                    settings.enablePlayerInputGate = true;
+                    settings.skipPlayerDialogue = true;
+                    settings.forceRimMindPlayerDialogue = false;
+
+                    Assert.True(DialogueGate.ShouldSkipDialogue(null, DialogueTriggerKinds.Chitchat));
+                    Assert.True(DialogueGate.ShouldSkipDialogue(null, DialogueTriggerKinds.Auto));
+                    Assert.True(DialogueGate.ShouldSkipDialogue(null, DialogueTriggerKinds.PlayerInput));
                 }));
         }
 
@@ -103,6 +118,48 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     Assert.False(ActionGate.ShouldSkipAction("adjust_faction"));
                     Assert.False(ActionGate.ShouldSkipAction("romance_attempt"));
                     Assert.False(ActionGate.ShouldSkipAction("recruit_agree"));
+                }),
+                ("real mechanism and tool prefixes match romance social recruit and diplomacy gates", () =>
+                {
+                    var settings = Reset(active: true);
+                    settings.enableActionGate = true;
+
+                    settings.skipSocialActions = true;
+                    settings.skipDiplomacyActions = false;
+                    settings.skipRecruitAgree = false;
+                    Assert.True(ActionGate.IsRomanceAction("romance_attempt"));
+                    Assert.True(ActionGate.IsRomanceAction("pawn.interaction.romance_attempt"));
+                    Assert.True(ActionGate.IsRomanceAction("pawn.interaction.romance_breakup"));
+                    Assert.True(ActionGate.IsRomanceAction("custom_romance_tag"));
+                    Assert.True(ActionGate.ShouldSkipAction("pawn.interaction"));
+                    Assert.True(ActionGate.ShouldSkipAction("pawn.interaction.social_relax"));
+                    Assert.True(ActionGate.ShouldSkipAction("pawn.interaction.give_item"));
+                    Assert.True(ActionGate.ShouldSkipAction("pawn.interaction.romance_attempt"));
+                    Assert.False(ActionGate.ShouldSkipAction("world.faction"));
+
+                    settings.skipSocialActions = false;
+                    settings.skipDiplomacyActions = true;
+                    Assert.True(ActionGate.ShouldSkipAction("world.faction"));
+                    Assert.True(ActionGate.ShouldSkipAction("world.faction.adjust_goodwill"));
+                    Assert.True(ActionGate.ShouldSkipAction("faction.goodwill"));
+                    Assert.True(ActionGate.ShouldSkipAction("diplomacy"));
+                    Assert.True(ActionGate.ShouldSkipAction("storyteller.incident"));
+                    Assert.True(ActionGate.ShouldSkipAction("incident.raid"));
+                    Assert.False(ActionGate.ShouldSkipAction("pawn.interaction"));
+
+                    settings.skipDiplomacyActions = false;
+                    settings.skipRecruitAgree = true;
+                    Assert.True(ActionGate.ShouldSkipAction("recruit"));
+                    Assert.True(ActionGate.ShouldSkipAction("pawn.recruit"));
+                    Assert.True(ActionGate.ShouldSkipAction("prisoner.recruit"));
+                    Assert.True(ActionGate.ShouldSkipAction("prisoner.recruit.chat"));
+                }),
+                ("skip check extensions expose open string channels", () =>
+                {
+                    Assert.Equal(SkipCheckChannels.Action, new RimChatActionSkipCheck().Channel);
+                    Assert.Equal(SkipCheckChannels.Dialogue, new RimChatDialogueSkipCheck().Channel);
+                    Assert.Equal(SkipCheckChannels.FloatMenu, new RimChatFloatMenuSkipCheck().Channel);
+                    Assert.Equal(SkipCheckChannels.StorytellerIncident, new RimChatStorytellerIncidentSkipCheck().Channel);
                 }));
         }
 
