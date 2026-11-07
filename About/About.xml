@@ -8,7 +8,64 @@
     <li>1.6</li>
     <li>1.7</li>
   </supportedVersions>
-  <description>Coordination bridge between RimMind suite and RimChat. Handles dialogue/action dedup and context exposure. [v2.0 BREAKING CHANGES]</description>
+  <description>[h1]RimMind - Bridge: RimChat (v2.0)[/h1]
+Compatibility and coordination bridge between the RimMind suite and the RimChat mod. Provides intelligent dialogue gating, action deconfliction, shared storyteller cooldowns, and diplomatic context synchronization when both mods are active simultaneously.
+
+[b]v2.0 Clean Architecture &amp; RimWorld 1.6 / 1.7 Dual-Version Support:[/b]
+[list]
+[*][b]RimWorld 1.6 &amp; 1.7 (Waylith / .NET 10) Ready[/b]: Native multi-target compilation supporting both RimWorld 1.6 (.NET Framework 4.8) and RimWorld 1.7 (.NET 10 / Harmony 2.x &amp; 3.x).
+[*][b]Zero Hard-Dependency Reflection Shim[/b]: Communicates with RimChat via safe reflection and [code]RimMind-Core[/code]'s public gating seams, remaining safely inert if RimChat is not installed. Note: v1.x saves are not compatible with v2.0.
+[*][b]Three-Layer Mutual Exclusion Gating[/b]: Deconflicts overlapping player dialogues, faction diplomacy actions, and storyteller event triggers.
+[/list]
+
+[h2]What Is RimMind[/h2]
+RimMind is an enterprise-grade, AI-powered RimWorld mod suite. Integrated with Large Language Models (LLM), it transforms colonists into self-reflecting agents with distinct personalities, three-tier memories, natural spoken dialogues, autonomous mechanisms, and dynamic storytelling.
+
+[h2]Sub-mod List &amp; Dependency Relationships[/h2]
+[table]
+[tr][th]Mod[/th][th]Responsibility[/th][th]Dependencies[/th][th]GitHub[/th][/tr]
+[tr][td]RimMind-Core[/td][td]LLM runtime, 4-Zone context engine, async queue, ToolCall registry &amp; F8 Hub[/td][td]Harmony[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Core]Link[/url][/td][/tr]
+[tr][td]RimMind-Actions[/td][td]Composite ToolCall mechanisms, battlefield triage &amp; autonomous construction[/td][td]Core[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Actions]Link[/url][/td][/tr]
+[tr][td]RimMind-Advisor[/td][td]Colonist self-reflective advice cards, 5-domain autonomy &amp; player approval[/td][td]Core, Actions[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Advisor]Link[/url][/td][/tr]
+[tr][td]RimMind-Dialogue[/td][td]Contextual spoken dialogue via express_dialogue ToolCall &amp; speech bubbles[/td][td]Core[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Dialogue]Link[/url][/td][/tr]
+[tr][td]RimMind-Memory[/td][td]3-Tier cognitive memory hierarchy, work aggregation &amp; temporal decay[/td][td]Core[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Memory]Link[/url][/td][/tr]
+[tr][td]RimMind-Personality[/td][td]Big-Five psychological profiles, dawn monologues &amp; dynamic mood thoughts[/td][td]Core[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Personality]Link[/url][/td][/tr]
+[tr][td]RimMind-Storyteller[/td][td]AI Story Director, dramatic tension curve, chained arcs &amp; Storyteller Altar[/td][td]Core, Memory[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Storyteller]Link[/url][/td][/tr]
+[tr][td]RimMind-Extension-ModelService[/td][td]Multi-provider routing, Anthropic KV cache, local gateways &amp; load balancing[/td][td]Core[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Extension-ModelService]Link[/url][/td][/tr]
+[tr][td][b]RimMind-Bridge-RimChat[/b][/td][td]RimChat compatibility bridge: dialogue/action mutual exclusion &amp; context sync[/td][td]Core, RimChat[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Bridge-RimChat]Link[/url][/td][/tr]
+[tr][td]RimMind-Bridge-RimTalk[/td][td]RimTalk compatibility bridge: bubble harmonization &amp; bidirectional context[/td][td]Core, RimTalk[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Bridge-RimTalk]Link[/url][/td][/tr]
+[/table]
+[code]Core ──┬── Actions ── Advisor
+       ├── Dialogue
+       ├── Memory ── Storyteller
+       ├── Personality
+       ├── Extension-ModelService
+       ├── Bridge-RimChat
+       └── Bridge-RimTalk[/code]
+
+[h2]Core Features[/h2]
+[list]
+[*][b]Dialogue Gating[/b] - Automatically suppresses duplicate RimMind player chat triggers and floating chat menus when RimChat is active, preventing overlapping conversation windows.
+[*][b]Action &amp; Incident Gating[/b] - Coordinates diplomacy actions ([code]adjust_faction[/code], [code]trigger_incident[/code]), social romance/recruitment actions, and storyteller events with a shared global cooldown (default 1 in-game day).
+[*][b]Diplomatic &amp; RPG Context Synchronization[/b] - Imports faction diplomacy logs and RPG dialogue history from RimChat into [code]RimMind-Core[/code]'s context provider registry so RimMind AI agents stay aware of your diplomatic negotiations.
+[/list]
+
+[h2]Default Gating Matrix[/h2]
+[table]
+[tr][th]Category[/th][th]Scope[/th][th]Default Behavior[/th][/tr]
+[tr][td]Player Dialogue[/td][td]RimMind-Dialogue manual chat &amp; float menu[/td][td]Gated (Deferred to RimChat)[/td][/tr]
+[tr][td]Diplomacy Actions[/td][td]adjust_faction, trigger_incident[/td][td]Gated (Deferred to RimChat)[/td][/tr]
+[tr][td]Storyteller Incidents[/td][td]Overlapping random event triggers[/td][td]Gated with Shared Cooldown (60,000 ticks)[/td][/tr]
+[tr][td]Social &amp; Recruitment[/td][td]romance_accept, romance_breakup, recruit_agree[/td][td]Active (Configurable in Mod Settings)[/td][/tr]
+[tr][td]Context Sync[/td][td]RimChat diplomacy &amp; RPG chat logs[/td][td]Imported into RimMind Context[/td][/tr]
+[/table]
+
+[h2]Frequently Asked Questions[/h2]
+[b]Q: What happens if RimChat is not loaded?[/b]
+A: The bridge detects RimChat's absence at startup and remains completely inert with zero performance overhead.
+
+[b]Q: Can I customize which features RimMind keeps vs. defers to RimChat?[/b]
+A: Yes. All 13 gating and context synchronization switches can be toggled individually in Mod Settings.</description>
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>
