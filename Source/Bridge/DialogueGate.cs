@@ -1,3 +1,4 @@
+using RimMind.Application.Common.Constants;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using Verse;
@@ -14,9 +15,9 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             return triggerType switch
             {
-                "Chitchat" => settings.enableChitchatGate,
-                "Auto" => settings.enableAutoGate,
-                "PlayerInput" => ShouldSkipPlayerInput(settings),
+                DialogueTriggerKinds.Chitchat => settings.enableChitchatGate,
+                DialogueTriggerKinds.Auto => settings.enableAutoGate,
+                DialogueTriggerKinds.PlayerInput => ShouldSkipPlayerInput(settings),
                 _ => false
             };
         }

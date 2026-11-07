@@ -48,7 +48,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                         () => BuildDiplomacyContext(),
                         null,
                         ct: ct).ConfigureAwait(false);
-                }, ModId, stalenessTicks: 1500, invalidationTriggers: new[] { "RimChatEvent" }));
+                }, ModId, stalenessTicks: 1500)); // RimChat state changes are external (no bus event): staleness only
         }
 
         private static string? BuildDiplomacyContext()
@@ -146,7 +146,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                         if (pawn == null) return null;
                         return BuildRpgContext(pawn);
                     }, null, ct: ct).ConfigureAwait(false);
-                }, ModId, stalenessTicks: 3000, invalidationTriggers: new[] { "RimChatEvent" }));
+                }, ModId, stalenessTicks: 3000)); // RimChat state changes are external (no bus event): staleness only
         }
 
         internal static Pawn? TryFindPawnById(int pawnId)
