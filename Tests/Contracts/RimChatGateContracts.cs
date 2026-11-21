@@ -1,9 +1,16 @@
+using System.Threading;
+using System.Threading.Tasks;
 using RimMind.Application.Common.Constants;
 using RimMind.Application.Common.Interfaces.Extension;
+using RimMind.Application.Common.Interfaces.Tools;
+using RimMind.Application.Common.Models.Tools;
 using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Cooldown;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
+using RimMind.Domain.Agent.Policies;
+using RimMind.Domain.ValueObjects;
+using RimMind.Presentation.Api;
 using RimMind.Testing;
 using Xunit;
 
@@ -160,6 +167,90 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     Assert.Equal(SkipCheckChannels.Dialogue, new RimChatDialogueSkipCheck().Channel);
                     Assert.Equal(SkipCheckChannels.FloatMenu, new RimChatFloatMenuSkipCheck().Channel);
                     Assert.Equal(SkipCheckChannels.StorytellerIncident, new RimChatStorytellerIncidentSkipCheck().Channel);
+                }),
+                ("ToolManifest scopes, kind, and autonomy domain drive classification without hardcoded tool names", () =>
+                {
+                    var settings = Reset(active: true);
+                    settings.enableActionGate = true;
+                    settings.skipDiplomacyActions = true;
+                    settings.skipSocialActions = true;
+                    settings.skipRecruitAgree = true;
+
+                    // Custom non-keyword tools classified purely by ToolManifest
+                    RegisterProbeTool("custom_treaty_offer", new ToolManifest
+                    {
+                        Kind = ToolKind.Mutation,
+                        Scopes = ToolScope.WorldAdmin
+                    });
+                    RegisterProbeTool("custom_bond_chat", new ToolManifest
+                    {
+                        Kind = ToolKind.Mutation,
+                        Scopes = ToolScope.Social
+                    });
+                    RegisterProbeTool("custom_convert_guest", new ToolManifest
+                    {
+                        Kind = ToolKind.Mutation,
+                        Scopes = ToolScope.Social,
+                        AutonomyDomainId = "social.recruit"
+                    });
+                    RegisterProbeTool("custom_flirt_gesture", new ToolManifest
+                    {
+                        Kind = ToolKind.Mutation,
+                        Scopes = ToolScope.Social,
+                        AutonomyDomainId = "romance"
+                    });
+                    // Read-only Query tools are never gated even if scoped to WorldAdmin or Social
+                    RegisterProbeTool("world.faction.query", new ToolManifest
+                    {
+                        Kind = ToolKind.Query,
+                        Scopes = ToolScope.WorldAdmin
+                    });
+                    RegisterProbeTool("pawn.relations.query", new ToolManifest
+                    {
+                        Kind = ToolKind.Query,
+                        Scopes = ToolScope.Social
+                    });
+                    // Explicit non-matching ColonyBuild manifest overrides accidental keyword in tool id
+                    RegisterProbeTool("build_faction_statue", new ToolManifest
+                    {
+                        Kind = ToolKind.Mutation,
+                        Scopes = ToolScope.ColonyBuild,
+                        DefaultDomain = AutonomyDomain.BlueprintPlacement
+                    });
+                    // Core mechanism recruit tool stays isolated under Recruit, not Social
+                    RegisterProbeTool("pawn.recruit.trigger", new ToolManifest
+                    {
+                        Kind = ToolKind.Mutation,
+                        Scopes = ToolScope.Social | ToolScope.ColonistSelf
+                    });
+
+                    Assert.True(ActionGate.IsDiplomacyAction("custom_treaty_offer"));
+                    Assert.False(ActionGate.IsSocialAction("custom_treaty_offer"));
+
+                    Assert.True(ActionGate.IsSocialAction("custom_bond_chat"));
+                    Assert.False(ActionGate.IsDiplomacyAction("custom_bond_chat"));
+                    Assert.False(ActionGate.IsRecruitAction("custom_bond_chat"));
+
+                    Assert.True(ActionGate.IsRecruitAction("custom_convert_guest"));
+                    Assert.False(ActionGate.IsSocialAction("custom_convert_guest"));
+
+                    Assert.True(ActionGate.IsRomanceAction("custom_flirt_gesture"));
+                    Assert.True(ActionGate.IsSocialAction("custom_flirt_gesture"));
+
+                    Assert.False(ActionGate.ShouldSkipAction("world.faction.query"));
+                    Assert.False(ActionGate.ShouldSkipAction("pawn.relations.query"));
+                    Assert.False(ActionGate.ShouldSkipAction("build_faction_statue"));
+
+                    settings.skipSocialActions = true;
+                    settings.skipRecruitAgree = false;
+                    Assert.False(ActionGate.ShouldSkipAction("pawn.recruit.trigger"));
+                    Assert.True(ActionGate.ShouldSkipAction("custom_bond_chat"));
+
+                    settings.skipSocialActions = false;
+                    settings.skipRecruitAgree = true;
+                    Assert.True(ActionGate.ShouldSkipAction("pawn.recruit.trigger"));
+                    Assert.True(ActionGate.ShouldSkipAction("custom_convert_guest"));
+                    Assert.False(ActionGate.ShouldSkipAction("custom_bond_chat"));
                 }));
         }
 
@@ -244,7 +335,27 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
         {
             RimChatDetector.UseActiveProbeForTesting(_ => active);
             BridgeRimChatSettings.ResetForTesting();
+            RimMindAPI.ToolSet.Reset();
             return BridgeRimChatSettings.Get();
+        }
+
+        private static void RegisterProbeTool(string id, ToolManifest manifest)
+        {
+            RimMindAPI.ToolSet.Registry.Register(new ProbeToolHandler(new ToolDefinition
+            {
+                Id = id,
+                Manifest = manifest
+            }));
+        }
+
+        private sealed class ProbeToolHandler : IToolHandler
+        {
+            public ProbeToolHandler(ToolDefinition definition) => Definition = definition;
+            public string Id => Definition.Id;
+            public string OwnerModId => "TestMod";
+            public ToolDefinition Definition { get; }
+            public Task<Result<ToolResult, RimMindError>> ExecuteAsync(ToolCallArgs args, CancellationToken ct)
+                => Task.FromResult(Result<ToolResult, RimMindError>.Ok(ToolResult.Ok("ok")));
         }
 
         private static void ResetCooldown(int tick)

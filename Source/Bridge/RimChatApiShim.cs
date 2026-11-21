@@ -1,8 +1,9 @@
 using System;
 using System.Reflection;
-using HarmonyLib;
+using System.Runtime.CompilerServices;
 using RimMind.Application.Features.Bridges;
 using RimMind.Domain.ValueObjects;
+using RimMind.Presentation.Api;
 
 namespace RimMind.Bridge.RimChat.Bridge
 {
@@ -12,10 +13,8 @@ namespace RimMind.Bridge.RimChat.Bridge
         private const string DiplomacyManagerTypeName = "RimChat.DiplomacySystem.GameComponent_DiplomacyManager";
         private const string RpgArchiveManagerTypeName = "RimChat.Memory.RpgNpcDialogueArchiveManager";
 
-        internal static readonly ReflectionAccessor Accessor = new ReflectionAccessor(
-            typeName => AccessTools.TypeByName(typeName),
-            msg => RimMindErrors.Warn(msg),
-            "[RimMind-Bridge-RimChat]");
+        internal static readonly ReflectionAccessor Accessor =
+            RimMindAPI.Bridges.CreateReflectionAccessor("[RimMind-Bridge-RimChat]");
 
         private static Type? _apiType;
         private static Type? _diplomacyManagerType;
@@ -28,6 +27,9 @@ namespace RimMind.Bridge.RimChat.Bridge
             Type? rpgArchiveManagerType)
         {
             Accessor.ResetForTesting();
+            Accessor.SetCachedType(ApiTypeName, apiType);
+            Accessor.SetCachedType(DiplomacyManagerTypeName, diplomacyManagerType);
+            Accessor.SetCachedType(RpgArchiveManagerTypeName, rpgArchiveManagerType);
             _apiType = apiType;
             _diplomacyManagerType = diplomacyManagerType;
             _rpgArchiveManagerType = rpgArchiveManagerType;
@@ -42,7 +44,7 @@ namespace RimMind.Bridge.RimChat.Bridge
             ResolveTypes();
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ResolveTypes()
         {
             try
@@ -83,6 +85,14 @@ namespace RimMind.Bridge.RimChat.Bridge
             string fieldName,
             BindingFlags flags = BindingFlags.Public | BindingFlags.Instance)
             => Accessor.GetCachedField(type, fieldName, flags);
+
+        public static MethodInfo? GetCachedMethod(
+            Type type,
+            string methodName,
+            BindingFlags flags = BindingFlags.Public | BindingFlags.Static,
+            Type[]? parameterTypes = null,
+            bool warnIfMissing = true)
+            => Accessor.GetCachedMethod(type, methodName, flags, parameterTypes, warnIfMissing);
 
         public static object? GetStaticPropertyValue(Type type, string propertyName)
             => Accessor.GetStaticPropertyValue(type, propertyName);

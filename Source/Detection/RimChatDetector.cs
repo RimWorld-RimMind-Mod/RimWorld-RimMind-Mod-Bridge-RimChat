@@ -1,7 +1,6 @@
 using System;
-using HarmonyLib;
 using RimMind.Application.Features.Bridges;
-using Verse;
+using RimMind.Presentation.Api;
 
 namespace RimMind.Bridge.RimChat.Detection
 {
@@ -11,15 +10,14 @@ namespace RimMind.Bridge.RimChat.Detection
         private const string RimChatApiTypeName = "RimChat.API.RimChatAPI";
         private const int CacheIntervalTicks = 6000;
 
-        internal static readonly SoftDependencyDetector Detector = new SoftDependencyDetector(
+        internal static readonly SoftDependencyDetector Detector = RimMindAPI.Bridges.CreateDetector(
             RimChatPackageId,
             new[] { RimChatApiTypeName },
-            ModsConfig.IsActive,
-            AccessTools.TypeByName,
-            () => SafeTicksGame,
             CacheIntervalTicks);
 
         public static bool IsRimChatActive => Detector.IsModActive();
+
+        public static bool IsRimChatApiAvailable => Detector.IsAvailable();
 
         public static void InvalidateCache()
         {
@@ -35,15 +33,6 @@ namespace RimMind.Bridge.RimChat.Detection
         internal static void ResetActiveProbeForTesting()
         {
             Detector.ResetDelegatesForTesting();
-        }
-
-        private static int SafeTicksGame
-        {
-            get
-            {
-                try { return Find.TickManager?.TicksGame ?? 0; }
-                catch { return 0; }
-            }
         }
     }
 }

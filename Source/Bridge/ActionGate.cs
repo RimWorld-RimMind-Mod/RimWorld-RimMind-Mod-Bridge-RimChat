@@ -1,43 +1,17 @@
 using System;
-using System.Collections.Generic;
+using RimMind.Application.Common.Models.Tools;
+using RimMind.Application.Features.Tools;
 using RimMind.Bridge.RimChat.Cooldown;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
-using Verse;
+using RimMind.Domain.Agent.Policies;
+using RimMind.Presentation.Api;
 
 namespace RimMind.Bridge.RimChat.Bridge
 {
     public static class ActionGate
     {
-        private static readonly HashSet<string> DiplomacyActions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "adjust_faction",
-            "trigger_incident",
-            "world.faction",
-            "diplomacy",
-            "world.storyteller",
-            "storyteller.incident",
-        };
-
-        private static readonly HashSet<string> SocialActions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "romance_attempt",
-            "romance_breakup",
-            "pawn.interaction",
-            "social_relax",
-            "give_item",
-            "actions_social_interact",
-            "social_interact",
-        };
-
-        private static readonly HashSet<string> RecruitActions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "recruit_agree",
-            "recruit",
-            "actions_recruit",
-            "pawn.recruit",
-            "prisoner.recruit",
-        };
+        private static readonly char[] TokenSeparators = { '.', '_', ':', '-', '/', ' ' };
 
         public static bool ShouldSkipAction(string? intentId)
         {
@@ -64,15 +38,26 @@ namespace RimMind.Bridge.RimChat.Bridge
         {
             if (string.IsNullOrWhiteSpace(intentId)) return false;
             string normalized = intentId!.Trim();
-            if (normalized.StartsWith("romance_", StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (MatchesPrefix(normalized, "pawn.interaction")
-                && (normalized.IndexOf("romance", StringComparison.OrdinalIgnoreCase) >= 0
-                    || normalized.EndsWith(".romance_attempt", StringComparison.OrdinalIgnoreCase)
-                    || normalized.EndsWith(".romance_breakup", StringComparison.OrdinalIgnoreCase)))
+
+            var def = ResolveToolDefinition(normalized);
+            if (def != null)
             {
-                return true;
+                var manifest = def.Manifest ?? ToolManifest.Default;
+                if (manifest.Kind == ToolKind.Query)
+                    return false;
+
+                if (ContainsToken(manifest.AutonomyDomainId, "romance"))
+                    return true;
+
+                ToolScope resolvedScopes = ToolScopeProjection.ResolveScopes(def);
+                bool hasExplicitScope = manifest.Scopes.HasValue && manifest.Scopes.Value != ToolScope.None;
+                if (hasExplicitScope && (resolvedScopes & ToolScope.Social) == ToolScope.None)
+                    return false;
+
+                if ((resolvedScopes & ToolScope.Social) != ToolScope.None)
+                    return MentionsToken(def, "romance");
             }
+
             return normalized.IndexOf("romance", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
@@ -80,47 +65,90 @@ namespace RimMind.Bridge.RimChat.Bridge
         {
             if (string.IsNullOrWhiteSpace(intentId)) return false;
             string normalized = intentId!.Trim();
-            if (IsRomanceAction(normalized)) return true;
-            if (SocialActions.Contains(normalized)) return true;
+
+            var def = ResolveToolDefinition(normalized);
+            if (def != null)
+            {
+                var manifest = def.Manifest ?? ToolManifest.Default;
+                if (manifest.Kind == ToolKind.Query)
+                    return false;
+
+                ToolScope resolvedScopes = ToolScopeProjection.ResolveScopes(def);
+                if (IsRecruitDefinition(def, manifest, resolvedScopes))
+                    return false;
+
+                if (ContainsToken(manifest.AutonomyDomainId, "social")
+                    || ContainsToken(manifest.AutonomyDomainId, "romance"))
+                {
+                    return true;
+                }
+
+                if ((resolvedScopes & ToolScope.Social) != ToolScope.None)
+                    return true;
+
+                if (HasAuthoritativeNonMatchingMetadata(manifest))
+                    return false;
+            }
+
+            // Minimal explicit fallback for unregistered or legacy intents lacking ToolManifest metadata.
+            if (normalized.IndexOf("romance", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+
             return MatchesPrefix(normalized, "pawn.interaction")
-                || normalized.StartsWith("pawn_interaction", StringComparison.OrdinalIgnoreCase)
-                || normalized.StartsWith("social.", StringComparison.OrdinalIgnoreCase);
+                || MatchesPrefix(normalized, "pawn_interaction")
+                || ContainsToken(normalized, "social")
+                || string.Equals(normalized, "give_item", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsDiplomacyAction(string? intentId)
         {
             if (string.IsNullOrWhiteSpace(intentId)) return false;
             string normalized = intentId!.Trim();
-            if (DiplomacyActions.Contains(normalized)) return true;
-            return MatchesPrefix(normalized, "world.faction")
-                || normalized.StartsWith("faction.", StringComparison.OrdinalIgnoreCase)
-                || normalized.StartsWith("faction_", StringComparison.OrdinalIgnoreCase)
-                || MatchesPrefix(normalized, "diplomacy")
-                || normalized.IndexOf("diplomacy", StringComparison.OrdinalIgnoreCase) >= 0
-                || MatchesPrefix(normalized, "world.storyteller")
-                || MatchesPrefix(normalized, "storyteller.incident")
-                || normalized.StartsWith("incident.", StringComparison.OrdinalIgnoreCase);
+
+            var def = ResolveToolDefinition(normalized);
+            if (def != null)
+            {
+                var manifest = def.Manifest ?? ToolManifest.Default;
+                if (manifest.Kind == ToolKind.Query)
+                    return false;
+
+                if (ContainsAnyToken(manifest.AutonomyDomainId, "diplomacy", "faction", "storyteller", "incident"))
+                    return true;
+
+                ToolScope resolvedScopes = ToolScopeProjection.ResolveScopes(def);
+                if ((resolvedScopes & ToolScope.WorldAdmin) != ToolScope.None)
+                    return true;
+
+                if (HasAuthoritativeNonMatchingMetadata(manifest))
+                    return false;
+            }
+
+            // Minimal explicit fallback for unregistered or legacy intents lacking ToolManifest metadata.
+            return ContainsAnyToken(normalized, "diplomacy", "faction", "storyteller", "incident");
         }
 
         public static bool IsRecruitAction(string? intentId)
         {
             if (string.IsNullOrWhiteSpace(intentId)) return false;
             string normalized = intentId!.Trim();
-            if (RecruitActions.Contains(normalized)) return true;
-            return MatchesPrefix(normalized, "recruit")
-                || normalized.StartsWith("recruit_", StringComparison.OrdinalIgnoreCase)
-                || MatchesPrefix(normalized, "pawn.recruit")
-                || MatchesPrefix(normalized, "prisoner.recruit")
-                || normalized.IndexOf("recruit", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
 
-        private static bool MatchesPrefix(string value, string prefix)
-        {
-            if (string.Equals(value, prefix, StringComparison.OrdinalIgnoreCase))
-                return true;
-            return value.Length > prefix.Length
-                && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                && (value[prefix.Length] == '.' || value[prefix.Length] == ':' || value[prefix.Length] == '_');
+            var def = ResolveToolDefinition(normalized);
+            if (def != null)
+            {
+                var manifest = def.Manifest ?? ToolManifest.Default;
+                if (manifest.Kind == ToolKind.Query)
+                    return false;
+
+                ToolScope resolvedScopes = ToolScopeProjection.ResolveScopes(def);
+                if (IsRecruitDefinition(def, manifest, resolvedScopes))
+                    return true;
+
+                if (HasAuthoritativeNonMatchingMetadata(manifest))
+                    return false;
+            }
+
+            // Minimal explicit fallback for unregistered or legacy intents lacking ToolManifest metadata.
+            return ContainsToken(normalized, "recruit");
         }
 
         public static bool ShouldSkipStorytellerIncident()
@@ -132,6 +160,100 @@ namespace RimMind.Bridge.RimChat.Bridge
             if (!settings.skipTriggerIncident) return false;
 
             return SharedIncidentCooldown.IsOnCooldown(settings.incidentCooldownTicks);
+        }
+
+        private static ToolDefinition? ResolveToolDefinition(string intentId)
+        {
+            try
+            {
+                return RimMindAPI.ToolSet.Registry?.FindById(intentId)?.Definition;
+            }
+            catch
+            {
+                // Runtime/ToolRegistry may be unavailable during early startup or isolated tests.
+                return null;
+            }
+        }
+
+        private static bool IsRecruitDefinition(ToolDefinition def, ToolManifest manifest, ToolScope resolvedScopes)
+        {
+            if (ContainsToken(manifest.AutonomyDomainId, "recruit"))
+                return true;
+
+            bool hasExplicitScope = manifest.Scopes.HasValue && manifest.Scopes.Value != ToolScope.None;
+            if (hasExplicitScope && (resolvedScopes & ToolScope.Social) == ToolScope.None)
+                return false;
+
+            if ((resolvedScopes & ToolScope.Social) != ToolScope.None)
+                return MentionsToken(def, "recruit");
+
+            return false;
+        }
+
+        private static bool HasAuthoritativeNonMatchingMetadata(ToolManifest manifest)
+        {
+            if (manifest.Scopes.HasValue && manifest.Scopes.Value != ToolScope.None)
+                return true;
+
+            if (manifest.DefaultDomain is AutonomyDomain domain
+                && domain != AutonomyDomain.HighRiskOperations)
+            {
+                return true;
+            }
+
+            return !string.IsNullOrWhiteSpace(manifest.AutonomyDomainId);
+        }
+
+        private static bool MentionsToken(ToolDefinition def, string token)
+        {
+            if (ContainsToken(def.Id, token) || ContainsToken(def.Manifest?.DisplayName, token))
+                return true;
+
+            var aliases = def.Manifest?.Aliases;
+            if (aliases != null)
+            {
+                for (int i = 0; i < aliases.Count; i++)
+                {
+                    if (ContainsToken(aliases[i], token))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsAnyToken(string? value, params string[] tokens)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return false;
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                if (ContainsToken(value, tokens[i]))
+                    return true;
+            }
+            return false;
+        }
+
+        private static bool ContainsToken(string? value, string token)
+        {
+            if (string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(token))
+                return false;
+
+            string[] parts = value!.Split(TokenSeparators, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (string.Equals(parts[i], token, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
+        private static bool MatchesPrefix(string value, string prefix)
+        {
+            if (string.Equals(value, prefix, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return value.Length > prefix.Length
+                && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                && (value[prefix.Length] == '.' || value[prefix.Length] == ':' || value[prefix.Length] == '_');
         }
     }
 }

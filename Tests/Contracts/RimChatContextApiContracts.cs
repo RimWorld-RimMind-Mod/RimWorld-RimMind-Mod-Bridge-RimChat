@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using RimMind.Application.Common.Interfaces.Context;
+using RimMind.Application.Common.Interfaces.Extension;
 using RimMind.Bridge.RimChat.Bridge;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
+using RimMind.Presentation.Api;
 using RimMind.Testing;
 using Xunit;
 
@@ -23,9 +26,11 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                 {
                     ResetContext(active: false);
 
-                    ContextPullBridge.Register();
+                    var bridge = new ContextPullBridge();
+                    bridge.Register();
 
-                    Assert.Empty(RimMind.Presentation.Api.RimMindAPI.Context.ContextKeys.GetAll());
+                    Assert.False(bridge.IsRegistered);
+                    Assert.Empty(RimMindAPI.Context.ContextKeys.GetAll());
                 }),
                 ("enabled diplomacy and RPG histories register both public keys", () =>
                 {
@@ -34,10 +39,14 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     settings.pullDiplomacyHistory = true;
                     settings.pullRpgHistory = true;
 
-                    ContextPullBridge.Register();
+                    var bridge = new ContextPullBridge();
+                    bridge.Register();
 
+                    Assert.True(bridge.IsRegistered);
+                    Assert.Equal("context_pull", bridge.Id);
+                    Assert.Equal("RimMindBridgeRimChat", bridge.OwnerModId);
                     Assert.Collection(
-                        RimMind.Presentation.Api.RimMindAPI.Context.ContextKeys.GetAll(),
+                        RimMindAPI.Context.ContextKeys.GetAll(),
                         meta =>
                         {
                             Assert.Equal("rimchat_diplomacy", meta.Key);
@@ -56,23 +65,76 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     settings.pullDiplomacyHistory = false;
                     settings.pullRpgHistory = true;
 
-                    ContextPullBridge.Register();
+                    var bridge = new ContextPullBridge();
+                    bridge.Register();
 
+                    Assert.True(bridge.IsRegistered);
                     Assert.Equal(
                         "rimchat_rpg_history",
                         Assert.Single(
-                            RimMind.Presentation.Api.RimMindAPI.Context.ContextKeys.GetAll()).Key);
+                            RimMindAPI.Context.ContextKeys.GetAll()).Key);
                 }),
-                ("unregister removes both public keys", () =>
+                ("unregister removes both public keys symmetrically", () =>
                 {
                     var settings = ResetContext(active: true);
                     settings.pullDiplomacyHistory = true;
                     settings.pullRpgHistory = true;
-                    ContextPullBridge.Register();
+                    var bridge = new ContextPullBridge();
+                    bridge.Register();
 
-                    ContextPullBridge.Unregister();
+                    bridge.Unregister();
 
-                    Assert.Empty(RimMind.Presentation.Api.RimMindAPI.Context.ContextKeys.GetAll());
+                    Assert.False(bridge.IsRegistered);
+                    Assert.Empty(RimMindAPI.Context.ContextKeys.GetAll());
+                }),
+                ("RimChatBridgeCoordinator manages gates, incident listener, and context pull symmetrically", () =>
+                {
+                    var settings = ResetContext(active: false);
+                    RimChatBridgeCoordinator.ResetForTesting();
+                    RimMindAPI.Ext.Reset();
+
+                    RimChatBridgeCoordinator.Register();
+                    Assert.Empty(RimMindAPI.Ext.Get<ISkipCheck>().All);
+                    Assert.Empty(RimMindAPI.Ext.Get<IIncidentExecutedListener>().All);
+                    Assert.Empty(RimMindAPI.Context.ContextKeys.GetAll());
+
+                    settings = ResetContext(active: true);
+                    settings.pullDiplomacyHistory = true;
+                    settings.pullRpgHistory = false;
+                    RimChatBridgeCoordinator.ResetForTesting();
+                    RimMindAPI.Ext.Reset();
+
+                    RimChatBridgeCoordinator.Register();
+
+                    Assert.Equal(
+                        new[]
+                        {
+                            "rimchat_bridge_dialogue",
+                            "rimchat_bridge_floatmenu",
+                            "rimchat_bridge_action",
+                            "rimchat_bridge_storyteller"
+                        },
+                        RimMindAPI.Ext.Get<ISkipCheck>().All.Select(g => g.Id));
+                    Assert.Single(RimMindAPI.Ext.Get<IIncidentExecutedListener>().All);
+                    Assert.All(RimChatBridgeCoordinator.Modules, m => Assert.True(m.IsRegistered));
+                    Assert.Equal("rimchat_diplomacy", Assert.Single(RimMindAPI.Context.ContextKeys.GetAll()).Key);
+
+                    // RefreshContextPull updates only providers without re-registering skip checks
+                    int beforeCount = RimMindAPI.ExtensionRegisterCount;
+                    settings.pullDiplomacyHistory = false;
+                    settings.pullRpgHistory = true;
+                    RimChatBridgeCoordinator.RefreshContextPull();
+                    Assert.Equal(beforeCount, RimMindAPI.ExtensionRegisterCount);
+                    Assert.Equal("rimchat_rpg_history", Assert.Single(RimMindAPI.Context.ContextKeys.GetAll()).Key);
+
+                    RimChatBridgeCoordinator.Unregister();
+
+                    Assert.Empty(RimMindAPI.Ext.Get<ISkipCheck>().All);
+                    Assert.Empty(RimMindAPI.Ext.Get<IIncidentExecutedListener>().All);
+                    Assert.All(RimChatBridgeCoordinator.Modules, m => Assert.False(m.IsRegistered));
+                    Assert.Empty(RimMindAPI.Context.ContextKeys.GetAll());
+
+                    RimChatBridgeCoordinator.ResetForTesting();
                 }),
                 ("registered diplomacy provider projects most recent 3 sessions and separates header with newline", () =>
                 {
@@ -124,10 +186,11 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                         apiType: null,
                         diplomacyManagerType: typeof(DiplomacyManagerProbe),
                         rpgArchiveManagerType: null);
-                    ContextPullBridge.Register();
+                    var bridge = new ContextPullBridge();
+                    bridge.Register();
 
                     var meta = Assert.Single(
-                        RimMind.Presentation.Api.RimMindAPI.Context.ContextKeys.GetAll());
+                        RimMindAPI.Context.ContextKeys.GetAll());
                     var def = Assert.IsType<ContextProviderDef>(meta.Def);
                     string? projected = def.Provider(
                         new ProviderContext("contract", "trace"),
@@ -218,6 +281,9 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     Assert.Same(
                         RimChatApiShim.GetCachedField(typeof(FieldProbe), "PublicValue"),
                         RimChatApiShim.GetCachedField(typeof(FieldProbe), "PublicValue"));
+                    Assert.Same(
+                        RimChatApiShim.GetCachedMethod(typeof(ManagerProbe), "Ping"),
+                        RimChatApiShim.GetCachedMethod(typeof(ManagerProbe), "Ping"));
                 }),
                 ("missing reflection members fail closed", () =>
                 {
@@ -262,6 +328,7 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
         {
             public static string StaticValue => "value";
             public static ManagerProbe Instance { get; } = new ManagerProbe();
+            public static string Ping() => "pong";
         }
 
         private sealed class FieldProbe

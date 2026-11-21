@@ -136,140 +136,126 @@ namespace RimMind.Bridge.RimChat.Settings
     }
 }
 
-namespace RimMind.Application.Common.Interfaces.Extension
-{
-    public interface IExtension { string Id { get; } string OwnerModId { get; } }
-    public interface IExtensionRegistry<T> where T : class, IExtension
-    {
-        void Register(T extension);
-        bool Unregister(string id);
-        int UnregisterByOwner(string ownerModId);
-        System.Collections.Generic.IReadOnlyList<T> All { get; }
-        T? FindById(string id);
-    }
-    // ISettingsTab 真实定义在 RimMind.Presentation.Settings（见文件末尾），此处不再重复定义以避免命名冲突。
-    public interface IToggleBehavior : IExtension { bool IsActive { get; } void Toggle(); }
-    public interface IDialogueTrigger : IExtension { void Trigger(Verse.Pawn pawn, string context, Verse.Pawn? recipient); }
-    public interface IModCooldown : IExtension { int CooldownTicks { get; } }
-    public enum SkipCheckKind { Dialogue, FloatMenu, Action, StorytellerIncident }
-    public static class SkipCheckChannels
-    {
-        public const string Dialogue = "dialogue";
-        public const string FloatMenu = "float_menu";
-        public const string Action = "action";
-        public const string StorytellerIncident = "storyteller_incident";
-    }
-    public readonly struct SkipCheckArgs
-    {
-        private readonly string? _tag;
-        public object? Pawn { get; init; }
-        public object? RecipientPawn { get; init; }
-        public int PawnId { get; init; }
-        public int RecipientPawnId { get; init; }
-        public string? Trigger { get; init; }
-        public string? IntentId { get; init; }
-        public string? Tag
-        {
-            get => _tag ?? Trigger ?? IntentId;
-            init => _tag = value;
-        }
-    }
-    public interface ISkipCheck : IExtension { SkipCheckKind Kind { get; } bool ShouldSkip(in SkipCheckArgs args); }
-    public interface IChannelSkipCheck : ISkipCheck { string Channel { get; } }
-    public interface IIncidentExecutedListener : IExtension { void OnIncidentExecuted(); }
-}
-
 namespace UnityEngine
 {
     public struct Rect { public float x, y, width, height; public Rect(float x, float y, float w, float h) { this.x = x; this.y = y; width = w; height = h; } }
 }
 
-// ── Application 层接口桩（ContextPullBridge 依赖）──
-namespace RimMind.Application.Common.Interfaces.Context
+namespace RimMind.Presentation.Api
 {
     using System;
     using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using RimMind.Domain.ValueObjects;
-
-    /// <summary>
-    /// 异步上下文 Provider 定义（桩，与源码签名一致）
-    /// </summary>
-    public sealed class ContextProviderDef
-    {
-        public string Key { get; }
-        public ContextLayer Layer { get; }
-        public float Priority { get; }
-        public string? OwnerMod { get; }
-        public Func<ProviderContext, CancellationToken, Task<string?>> Provider { get; }
-        public int StalenessTicks { get; }
-        public IReadOnlyList<string>? InvalidationTriggers { get; }
-
-        public ContextProviderDef(
-            string key,
-            ContextLayer layer,
-            float priority,
-            Func<ProviderContext, CancellationToken, Task<string?>> provider,
-            string? ownerMod = null,
-            int stalenessTicks = 0,
-            IReadOnlyList<string>? invalidationTriggers = null)
-        {
-            Key = key ?? throw new ArgumentNullException(nameof(key));
-            Layer = layer;
-            Priority = priority;
-            Provider = provider ?? throw new ArgumentNullException(nameof(provider));
-            OwnerMod = ownerMod;
-            StalenessTicks = stalenessTicks;
-            InvalidationTriggers = invalidationTriggers;
-        }
-    }
-
-    /// <summary>
-    /// 上下文 Provider 参数（桩）
-    /// </summary>
-    public sealed record ProviderContext
-    {
-        public string Scenario { get; init; }
-        public string TraceId { get; init; }
-        public int PawnId { get; init; }
-        public string? NpcId { get; init; }
-        public int? MapId { get; init; }
-        public IReadOnlyDictionary<string, object?>? Hints { get; init; }
-
-        public ProviderContext(string scenario, string traceId)
-        {
-            Scenario = scenario ?? throw new ArgumentNullException(nameof(scenario));
-            TraceId = traceId ?? throw new ArgumentNullException(nameof(traceId));
-        }
-    }
-
-    /// <summary>
-    /// 上下文 Key 注册表接口（桩）
-    /// </summary>
-    public interface IContextKeyRegistry
-    {
-        void Register(KeyMeta meta);
-        void Register(ContextProviderDef def);
-        bool Unregister(string key);
-        IReadOnlyList<KeyMeta> GetAll();
-        KeyMeta? Get(string key);
-        void Clear();
-    }
-}
-
-namespace RimMind.Presentation.Api
-{
-    using RimMind.Application.Common.Interfaces.Extension;
+    using System.Linq;
     using RimMind.Application.Common.Interfaces.Context;
+    using RimMind.Application.Common.Interfaces.Extension;
+    using RimMind.Application.Common.Interfaces.Tools;
+    using RimMind.Application.Features.Bridges;
+    using RimMind.Application.Features.Tools;
     using RimMind.Domain.ValueObjects;
-    using System.Collections.Generic;
 
     public static class RimMindAPI
     {
         public static int ExtensionRegisterCount { get; set; }
         public static int ContextRegisterCount { get; set; }
         public static int ContextUnregisterCount { get; set; }
+
+        public static class Bridges
+        {
+            private static readonly Action<string> DefaultLogWarn = msg =>
+            {
+                RimMindErrors.Warn(msg);
+                Verse.Log.Warning(msg);
+            };
+
+            public static SoftDependencyDetector CreateDetector(
+                string packageId,
+                IReadOnlyList<string>? candidateTypeNames = null,
+                int cacheIntervalTicks = SoftDependencyDetector.DefaultCacheIntervalTicks)
+            {
+                return new SoftDependencyDetector(
+                    packageId,
+                    candidateTypeNames,
+                    Verse.ModsConfig.IsActive,
+                    HarmonyLib.AccessTools.TypeByName,
+                    GetCurrentTickSafe,
+                    cacheIntervalTicks);
+            }
+
+            public static ReflectionAccessor CreateReflectionAccessor(
+                string? logPrefix = null,
+                Action<string>? warnCallback = null,
+                Func<string, Type?>? resolveType = null)
+            {
+                return new ReflectionAccessor(
+                    resolveType ?? HarmonyLib.AccessTools.TypeByName,
+                    warnCallback ?? DefaultLogWarn,
+                    logPrefix);
+            }
+
+            public static ExternalModBridgeCoordinator CreateCoordinator(
+                Func<bool> isModAvailable,
+                IReadOnlyList<IBridgeModule> modules,
+                IReadOnlyList<ISkipCheck>? gates = null,
+                Action<string>? logInfo = null,
+                Action<string>? logWarn = null,
+                string? inactiveMessage = null)
+            {
+                return new ExternalModBridgeCoordinator(
+                    isModAvailable,
+                    modules,
+                    gates,
+                    logInfo ?? Verse.Log.Message,
+                    logWarn ?? DefaultLogWarn,
+                    gate => Ext.Get<ISkipCheck>().Register(gate),
+                    gateId => Ext.Get<ISkipCheck>().Unregister(gateId),
+                    inactiveMessage);
+            }
+
+            private static int GetCurrentTickSafe()
+            {
+                try
+                {
+                    return Verse.Find.TickManager?.TicksGame ?? 0;
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
+        }
+
+        public static class Ext
+        {
+            private static readonly Dictionary<Type, object> Registries = new Dictionary<Type, object>();
+
+            public static IExtensionRegistry<T> Get<T>() where T : class, IExtension
+            {
+                if (!Registries.TryGetValue(typeof(T), out var registry))
+                {
+                    registry = new StubRegistry<T>();
+                    Registries[typeof(T)] = registry;
+                }
+                return (IExtensionRegistry<T>)registry;
+            }
+
+            public static void Reset() => Registries.Clear();
+        }
+
+        public static class Text
+        {
+            public static string TrOr(string key, string fallback, params object[] args)
+            {
+                string template = fallback ?? key ?? string.Empty;
+                return args == null || args.Length == 0 ? template : string.Format(template, args);
+            }
+        }
+
+        public static class ToolSet
+        {
+            private static ToolRegistry _registry = new ToolRegistry();
+            public static IToolRegistry Registry => _registry;
+            public static void Reset() => _registry = new ToolRegistry();
+        }
 
         public static class MainThreadSnapshot
         {
@@ -282,15 +268,7 @@ namespace RimMind.Presentation.Api
         }
 
         public static IExtensionRegistry<T> Extensions<T>() where T : class, IExtension
-            => new StubRegistry<T>();
-
-        public static bool ShouldSkipDialogue(Verse.Pawn pawn, string trigger) => false;
-        public static bool ShouldSkipFloatMenu() => false;
-        public static bool ShouldSkipAction(string intentId) => false;
-        public static bool ShouldSkipStorytellerIncident() => false;
-        public static bool CanTriggerDialogue => false;
-        public static void TriggerDialogue(Verse.Pawn pawn, string context, Verse.Pawn? recipient = null) { }
-        public static void NotifyIncidentExecuted() { }
+            => Ext.Get<T>();
 
         public static void ResetCounts() { ExtensionRegisterCount = 0; ContextRegisterCount = 0; ContextUnregisterCount = 0; }
 
@@ -313,10 +291,10 @@ namespace RimMind.Presentation.Api
 
             public void Register(ContextProviderDef def)
             {
-                // 用 ContextProviderDef 的信息构造 KeyMeta
                 var meta = new KeyMeta(def.Key, def.Layer, def.Priority,
                     _ => new List<ContextEntry>(), def.OwnerMod ?? string.Empty);
                 meta.Def = def;
+                _metas.RemoveAll(m => m.Key == def.Key);
                 _metas.Add(meta);
                 RimMindAPI.ContextRegisterCount++;
             }
@@ -336,7 +314,12 @@ namespace RimMind.Presentation.Api
         private sealed class StubRegistry<T> : IExtensionRegistry<T> where T : class, IExtension
         {
             private readonly List<T> _items = new List<T>();
-            public void Register(T extension) { _items.Add(extension); ExtensionRegisterCount++; }
+            public void Register(T extension)
+            {
+                _items.RemoveAll(x => x.Id == extension.Id);
+                _items.Add(extension);
+                ExtensionRegisterCount++;
+            }
             public bool Unregister(string id) { var item = _items.Find(x => x.Id == id); return item != null && _items.Remove(item); }
             public int UnregisterByOwner(string ownerModId) { var toRemove = _items.Where(x => x.OwnerModId == ownerModId).ToList(); foreach (var item in toRemove) _items.Remove(item); return toRemove.Count; }
             public IReadOnlyList<T> All => _items;

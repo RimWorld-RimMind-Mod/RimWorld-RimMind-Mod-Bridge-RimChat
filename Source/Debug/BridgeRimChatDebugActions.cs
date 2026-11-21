@@ -55,10 +55,10 @@ namespace RimMind.Bridge.RimChat.Debug
                 return;
             }
             var sb = new StringBuilder($"[RimMind-Bridge-RimChat] Dialogue Gate Test ({pawn.Name.ToStringShort}):\n");
-            sb.AppendLine($"  ShouldSkipDialogue(\"Chitchat\"): {RimMindAPI.ShouldSkipDialogue(pawn, "Chitchat")}");
-            sb.AppendLine($"  ShouldSkipDialogue(\"Auto\"): {RimMindAPI.ShouldSkipDialogue(pawn, "Auto")}");
-            sb.AppendLine($"  ShouldSkipDialogue(\"PlayerInput\"): {RimMindAPI.ShouldSkipDialogue(pawn, "PlayerInput")}");
-            sb.AppendLine($"  ShouldSkipFloatMenu(): {RimMindAPI.ShouldSkipFloatMenu()}");
+            sb.AppendLine($"  ShouldSkipDialogue(\"Chitchat\"): {RimMindAPI.Ext.ShouldSkipDialogue(pawn, "Chitchat")}");
+            sb.AppendLine($"  ShouldSkipDialogue(\"Auto\"): {RimMindAPI.Ext.ShouldSkipDialogue(pawn, "Auto")}");
+            sb.AppendLine($"  ShouldSkipDialogue(\"PlayerInput\"): {RimMindAPI.Ext.ShouldSkipDialogue(pawn, "PlayerInput")}");
+            sb.AppendLine($"  ShouldSkipFloatMenu(): {RimMindAPI.Ext.ShouldSkipFloatMenu()}");
             Log.Message(sb.ToString());
         }
 
@@ -67,11 +67,11 @@ namespace RimMind.Bridge.RimChat.Debug
         public static void TestActionGate()
         {
             var sb = new StringBuilder("[RimMind-Bridge-RimChat] Action Gate Test:\n");
-            sb.AppendLine($"  ShouldSkipAction(\"adjust_faction\"): {RimMindAPI.ShouldSkipAction("adjust_faction")}");
-            sb.AppendLine($"  ShouldSkipAction(\"trigger_incident\"): {RimMindAPI.ShouldSkipAction("trigger_incident")}");
-            sb.AppendLine($"  ShouldSkipAction(\"romance_attempt\"): {RimMindAPI.ShouldSkipAction("romance_attempt")}");
-            sb.AppendLine($"  ShouldSkipAction(\"recruit_agree\"): {RimMindAPI.ShouldSkipAction("recruit_agree")}");
-            sb.AppendLine($"  ShouldSkipStorytellerIncident(): {RimMindAPI.ShouldSkipStorytellerIncident()}");
+            sb.AppendLine($"  ShouldSkipAction(\"adjust_faction\"): {RimMindAPI.Ext.ShouldSkipAction("adjust_faction")}");
+            sb.AppendLine($"  ShouldSkipAction(\"trigger_incident\"): {RimMindAPI.Ext.ShouldSkipAction("trigger_incident")}");
+            sb.AppendLine($"  ShouldSkipAction(\"romance_attempt\"): {RimMindAPI.Ext.ShouldSkipAction("romance_attempt")}");
+            sb.AppendLine($"  ShouldSkipAction(\"recruit_agree\"): {RimMindAPI.Ext.ShouldSkipAction("recruit_agree")}");
+            sb.AppendLine($"  ShouldSkipStorytellerIncident(): {RimMindAPI.Ext.ShouldSkipStorytellerIncident()}");
             Log.Message(sb.ToString());
         }
 
@@ -80,7 +80,7 @@ namespace RimMind.Bridge.RimChat.Debug
         public static void ShowContextPullState()
         {
             var settings = BridgeRimChatSettings.Get();
-            var categories = RimMindAPI.GetRegisteredCategories();
+            var categories = RimMindAPI.Providers.GetRegisteredCategories();
             var rimchatCategories = categories.Where(c => c.StartsWith("rimchat_")).ToList();
             var sb = new StringBuilder("[RimMind-Bridge-RimChat] Context Pull State:\n");
             sb.AppendLine($"  Registered rimchat categories ({rimchatCategories.Count}):");
@@ -94,6 +94,14 @@ namespace RimMind.Bridge.RimChat.Debug
             sb.AppendLine($"    pullDiplomacyHistory: {settings.pullDiplomacyHistory}");
             sb.AppendLine($"    pullRpgHistory: {settings.pullRpgHistory}");
             Log.Message(sb.ToString());
+        }
+
+        [DebugAction("RimMind Bridge-RimChat", "Force Unregister Bridges",
+            actionType = DebugActionType.Action)]
+        public static void ForceUnregisterBridges()
+        {
+            RimChatBridgeCoordinator.Unregister();
+            Log.Message("[RimMind-Bridge-RimChat] All bridges unregistered.");
         }
     }
 }
