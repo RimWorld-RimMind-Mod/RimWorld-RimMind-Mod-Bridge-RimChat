@@ -1,27 +1,30 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using RimMind.Application.Common.Interfaces.Context;
+using RimMind.Application.Common.Interfaces.Extension;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
-using RimMind.Application.Common.Interfaces.Context;
 using RimMind.Domain.ValueObjects;
 using RimMind.Presentation.Api;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Bridge
 {
-    public static class ContextPullBridge
+    public sealed class ContextPullBridge : IBridgeModule
     {
         private const string ModId = "RimMindBridgeRimChat";
-        private static bool _diplomacyDisabled;
-        private static bool _rpgDisabled;
+        private bool _diplomacyDisabled;
+        private bool _rpgDisabled;
 
-        public static void Register()
+        public string Id => "context_pull";
+        public string OwnerModId => ModId;
+        public bool IsRegistered { get; private set; }
+
+        public void Register()
         {
+            if (IsRegistered) return;
             _diplomacyDisabled = false;
             _rpgDisabled = false;
 
@@ -35,9 +38,11 @@ namespace RimMind.Bridge.RimChat.Bridge
 
             if (settings.pullRpgHistory)
                 RegisterRpgProvider();
+
+            IsRegistered = true;
         }
 
-        private static void RegisterDiplomacyProvider()
+        private void RegisterDiplomacyProvider()
         {
             RimMindAPI.Context.ContextKeys.Register(new ContextProviderDef(
                 "rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
@@ -51,7 +56,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }, ModId, stalenessTicks: 1500)); // RimChat state changes are external (no bus event): staleness only
         }
 
-        private static string? BuildDiplomacyContext()
+        private string? BuildDiplomacyContext()
         {
             if (!RimChatDetector.IsRimChatActive || _diplomacyDisabled) return null;
 
@@ -66,7 +71,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                 var sb = new StringBuilder();
                 sb.AppendLine("[RimChat Diplomacy]");
                 int sessionCount = 0;
-                int startSessionIdx = System.Math.Max(0, sessions.Count - 3);
+                int startSessionIdx = Math.Max(0, sessions.Count - 3);
                 for (int si = startSessionIdx; si < sessions.Count; si++)
                 {
                     if (sessionCount >= 3) break;
@@ -93,7 +98,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     sb.AppendLine($"## {factionName}");
 
                     int msgCount = 0;
-                    int startIdx = System.Math.Max(0, messages.Count - 4);
+                    int startIdx = Math.Max(0, messages.Count - 4);
                     for (int i = startIdx; i < messages.Count; i++)
                     {
                         if (msgCount >= 4) break;
@@ -126,14 +131,14 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }
                 return sessionCount > 0 ? sb.ToString().TrimEnd() : null;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 RimMindErrors.Warn($"[RimMind-Bridge-RimChat] Diplomacy context pull failed: {ex.Message}");
                 return null;
             }
         }
 
-        private static void RegisterRpgProvider()
+        private void RegisterRpgProvider()
         {
             RimMindAPI.Context.ContextKeys.Register(new ContextProviderDef(
                 "rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
@@ -155,7 +160,7 @@ namespace RimMind.Bridge.RimChat.Bridge
             return RimMindPawnLookup.IsActiveSpawnedColonist(pawn) ? pawn : null;
         }
 
-        private static string? BuildRpgContext(Pawn pawn)
+        private string? BuildRpgContext(Pawn pawn)
         {
             if (!RimChatDetector.IsRimChatActive || _rpgDisabled) return null;
 
@@ -185,7 +190,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     var archivePawnIdValue = pawnLoadIdField.GetValue(archiveCandidate);
                     if (archivePawnIdValue == null) continue;
 
-                    int archivePawnId = System.Convert.ToInt32(archivePawnIdValue);
+                    int archivePawnId = Convert.ToInt32(archivePawnIdValue);
                     if (archivePawnId == pawn.thingIDNumber)
                     {
                         archive = archiveCandidate;
@@ -227,7 +232,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                     if (turns == null || turns.Count == 0) continue;
 
                     int turnCount = 0;
-                    int startIdx = System.Math.Max(0, turns.Count - 4);
+                    int startIdx = Math.Max(0, turns.Count - 4);
                     for (int ti = startIdx; ti < turns.Count; ti++)
                     {
                         if (turnCount >= 4) break;
@@ -261,7 +266,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                 }
                 return sessionCount > 0 ? sb.ToString().TrimEnd() : null;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 RimMindErrors.Warn($"[RimMind-Bridge-RimChat] RPG context pull failed: {ex.Message}");
                 return null;
@@ -274,15 +279,17 @@ namespace RimMind.Bridge.RimChat.Bridge
             return s.Length <= maxLen ? s : s.Substring(0, maxLen) + "...";
         }
 
-        public static void Unregister()
+        public void Unregister()
         {
+            if (!IsRegistered) return;
             _diplomacyDisabled = false;
             _rpgDisabled = false;
             RimMindAPI.Context.ContextKeys.Unregister("rimchat_diplomacy");
             RimMindAPI.Context.ContextKeys.Unregister("rimchat_rpg_history");
+            IsRegistered = false;
         }
 
-        public static void Refresh()
+        public void Refresh()
         {
             Unregister();
             Register();

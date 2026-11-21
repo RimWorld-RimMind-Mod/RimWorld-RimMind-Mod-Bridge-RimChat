@@ -1,7 +1,7 @@
-using RimMind.Presentation.Settings;
 using RimMind.Bridge.RimChat.Settings;
+using RimMind.Presentation.Api;
+using RimMind.Presentation.Settings;
 using UnityEngine;
-using Verse;
 
 namespace RimMind.Bridge.RimChat
 {
@@ -9,9 +9,7 @@ namespace RimMind.Bridge.RimChat
     {
         public string Id => "bridge_rimchat";
         public string OwnerModId => "RimMindBridgeRimChat";
-        public string Label => "RimMind.BridgeRimChat.Settings.TabLabel".CanTranslate()
-            ? (string)"RimMind.BridgeRimChat.Settings.TabLabel".Translate()
-            : "RimChat Bridge";
+        public string Label => RimMindAPI.Text.TrOr("RimMind.BridgeRimChat.Settings.TabLabel", "RimChat Bridge");
         public void Draw(Rect rect) => BridgeRimChatSettings.DrawSettingsContent(rect);
     }
 }

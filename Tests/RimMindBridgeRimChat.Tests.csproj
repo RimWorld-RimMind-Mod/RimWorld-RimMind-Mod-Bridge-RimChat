@@ -21,13 +21,8 @@
     <Compile Include="Contracts\**\*.cs" />
     <Compile Include="..\..\RimMind-Core\TestSupport\ContractCaseRunner.cs"
              Link="Support\ContractCaseRunner.cs" />
-    <Compile Include="..\..\RimMind-Core\Source\Application\Common\Constants\DialogueTriggerKinds.cs"
-             Link="Support\DialogueTriggerKinds.cs" />
-    <Compile Include="..\..\RimMind-Core\Source\Application\Features\Bridges\ReflectionAccessor.cs"
-             Link="Support\ReflectionAccessor.cs" />
-    <Compile Include="..\..\RimMind-Core\Source\Application\Features\Bridges\SoftDependencyDetector.cs"
-             Link="Support\SoftDependencyDetector.cs" />
     <Compile Include="../Source/Bridge/RimChatApiShim.cs" />
+    <Compile Include="../Source/Bridge/RimChatBridgeCoordinator.cs" />
     <Compile Include="../Source/Bridge/DialogueGate.cs" />
     <Compile Include="../Source/Bridge/ActionGate.cs" />
     <Compile Include="../Source/Bridge/ContextPullBridge.cs" />
@@ -46,6 +41,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../RimMind-Core/Source/Domain/RimMindCore.Domain.csproj" />
+    <ProjectReference Include="../../RimMind-Core/Source/Application/RimMindCore.Application.csproj" />
   </ItemGroup>
 
 </Project>
