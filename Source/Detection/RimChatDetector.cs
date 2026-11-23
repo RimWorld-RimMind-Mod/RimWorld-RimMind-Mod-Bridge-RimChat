@@ -7,12 +7,13 @@ namespace RimMind.Bridge.RimChat.Detection
     public static class RimChatDetector
     {
         public const string RimChatPackageId = "yancy.rimchat";
-        private const string RimChatApiTypeName = "RimChat.API.RimChatAPI";
+        private const string RimChatDiplomacyManagerTypeName = "RimChat.DiplomacySystem.GameComponent_DiplomacyManager";
+        private const string RimChatRpgArchiveManagerTypeName = "RimChat.Memory.RpgNpcDialogueArchiveManager";
         private const int CacheIntervalTicks = 6000;
 
         internal static readonly SoftDependencyDetector Detector = RimMindAPI.Bridges.CreateDetector(
             RimChatPackageId,
-            new[] { RimChatApiTypeName },
+            new[] { RimChatDiplomacyManagerTypeName, RimChatRpgArchiveManagerTypeName },
             CacheIntervalTicks);
 
         public static bool IsRimChatActive => Detector.IsModActive();

@@ -34,33 +34,6 @@ namespace RimMind.Bridge.RimChat.Bridge
             return false;
         }
 
-        public static bool IsRomanceAction(string? intentId)
-        {
-            if (string.IsNullOrWhiteSpace(intentId)) return false;
-            string normalized = intentId!.Trim();
-
-            var def = ResolveToolDefinition(normalized);
-            if (def != null)
-            {
-                var manifest = def.Manifest ?? ToolManifest.Default;
-                if (manifest.Kind == ToolKind.Query)
-                    return false;
-
-                if (ContainsToken(manifest.AutonomyDomainId, "romance"))
-                    return true;
-
-                ToolScope resolvedScopes = ToolScopeProjection.ResolveScopes(def);
-                bool hasExplicitScope = manifest.Scopes.HasValue && manifest.Scopes.Value != ToolScope.None;
-                if (hasExplicitScope && (resolvedScopes & ToolScope.Social) == ToolScope.None)
-                    return false;
-
-                if ((resolvedScopes & ToolScope.Social) != ToolScope.None)
-                    return MentionsToken(def, "romance");
-            }
-
-            return normalized.IndexOf("romance", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
         public static bool IsSocialAction(string? intentId)
         {
             if (string.IsNullOrWhiteSpace(intentId)) return false;

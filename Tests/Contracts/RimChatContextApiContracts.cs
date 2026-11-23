@@ -141,8 +141,8 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     BridgeRimChatSettings settings = ResetContext(active: true);
                     settings.pullDiplomacyHistory = true;
                     settings.pullRpgHistory = false;
-                    DiplomacyManagerProbe.Instance.dialogueSessions.Clear();
-                    DiplomacyManagerProbe.Instance.dialogueSessions.Add(
+                    DiplomacyManagerProbe.Instance.SessionsForTest.Clear();
+                    DiplomacyManagerProbe.Instance.SessionsForTest.Add(
                         new DiplomacySessionProbe
                         {
                             faction = "OldestFaction",
@@ -151,7 +151,7 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                                 new DiplomacyMessageProbe { sender = "Old", message = "should be skipped" }
                             }
                         });
-                    DiplomacyManagerProbe.Instance.dialogueSessions.Add(
+                    DiplomacyManagerProbe.Instance.SessionsForTest.Add(
                         new DiplomacySessionProbe
                         {
                             faction = "Outlanders",
@@ -164,7 +164,7 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                                 new DiplomacyMessageProbe { sender = "player", message = "four", isPlayer = true }
                             }
                         });
-                    DiplomacyManagerProbe.Instance.dialogueSessions.Add(
+                    DiplomacyManagerProbe.Instance.SessionsForTest.Add(
                         new DiplomacySessionProbe
                         {
                             faction = "Empire",
@@ -173,7 +173,7 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                                 new DiplomacyMessageProbe { sender = "Consul", message = "greetings" }
                             }
                         });
-                    DiplomacyManagerProbe.Instance.dialogueSessions.Add(
+                    DiplomacyManagerProbe.Instance.SessionsForTest.Add(
                         new DiplomacySessionProbe
                         {
                             faction = "Tribe",
@@ -183,7 +183,6 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                             }
                         });
                     RimChatApiShim.ConfigureTypesForTesting(
-                        apiType: null,
                         diplomacyManagerType: typeof(DiplomacyManagerProbe),
                         rpgArchiveManagerType: null);
                     var bridge = new ContextPullBridge();
@@ -254,7 +253,7 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
         public void API_shim_preserves_reflection_success_and_failure_contracts()
         {
             ContractCaseRunner.Run(
-                ("static property and manager singleton are exposed", () =>
+                ("static property, static field, and manager singletons are exposed", () =>
                 {
                     Assert.Equal(
                         "value",
@@ -264,6 +263,9 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     Assert.Same(
                         ManagerProbe.Instance,
                         RimChatApiShim.TryGetManagerInstance(typeof(ManagerProbe)));
+                    Assert.Same(
+                        DiplomacyManagerProbe.Instance,
+                        RimChatApiShim.TryGetManagerInstance(typeof(DiplomacyManagerProbe)));
                 }),
                 ("public and private instance fields honor binding flags and cache FieldInfo", () =>
                 {
@@ -341,10 +343,11 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
 
         private sealed class DiplomacyManagerProbe
         {
-            public static DiplomacyManagerProbe Instance { get; } =
-                new DiplomacyManagerProbe();
+            public static DiplomacyManagerProbe Instance = new DiplomacyManagerProbe();
 
-            public IList dialogueSessions = new ArrayList();
+            private readonly IList dialogueSessions = new ArrayList();
+
+            internal IList SessionsForTest => dialogueSessions;
         }
 
         private sealed class DiplomacySessionProbe

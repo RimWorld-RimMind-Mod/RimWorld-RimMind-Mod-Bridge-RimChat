@@ -46,8 +46,7 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                 }),
                 ("unknown reflected RimChat types remain unavailable", () =>
                 {
-                    RimChatApiShim.ConfigureTypesForTesting(null, null, null);
-                    Assert.Null(RimChatApiShim.ApiType);
+                    RimChatApiShim.ConfigureTypesForTesting(null, null);
                     Assert.Null(RimChatApiShim.DiplomacyManagerType);
                     Assert.Null(RimChatApiShim.RpgArchiveManagerType);
                 }));
