@@ -8,9 +8,16 @@ namespace RimMind.Bridge.RimChat.Cooldown
             Current.Game?.GetComponent<GameComponent_BridgeRimChat>();
 
         public static void RecordIncident()
-            => State?.RecordIncident(Find.TickManager.TicksGame);
+        {
+            var tickManager = Find.TickManager;
+            if (tickManager != null)
+                State?.RecordIncident(tickManager.TicksGame);
+        }
 
         public static bool IsOnCooldown(int cooldownTicks)
-            => State?.IsOnCooldown(Find.TickManager.TicksGame, cooldownTicks) ?? false;
+        {
+            var tickManager = Find.TickManager;
+            return tickManager != null && (State?.IsOnCooldown(tickManager.TicksGame, cooldownTicks) ?? false);
+        }
     }
 }

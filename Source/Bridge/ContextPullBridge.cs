@@ -15,8 +15,8 @@ namespace RimMind.Bridge.RimChat.Bridge
     public sealed class ContextPullBridge : IBridgeModule
     {
         private const string ModId = "RimMindBridgeRimChat";
-        private bool _diplomacyDisabled;
-        private bool _rpgDisabled;
+        private volatile bool _diplomacyDisabled;
+        private volatile bool _rpgDisabled;
 
         public string Id => "context_pull";
         public string OwnerModId => ModId;
@@ -48,7 +48,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                 "rimchat_diplomacy", ContextLayer.L2_Environment, 0.4f,
                 async (ctx, ct) =>
                 {
-                    if (!RimChatDetector.IsRimChatActive || _diplomacyDisabled) return null;
+                    if (_diplomacyDisabled) return null;
                     return await RimMindAPI.MainThreadSnapshot.GetAsync<string?>(
                         () => BuildDiplomacyContext(),
                         null,
@@ -65,7 +65,10 @@ namespace RimMind.Bridge.RimChat.Bridge
                 var manager = RimChatApiShim.TryGetManagerInstance(RimChatApiShim.DiplomacyManagerType);
                 if (manager == null) return null;
 
-                var sessions = RimChatApiShim.GetInstanceFieldValue(manager, "dialogueSessions") as IList;
+                var sessions = RimChatApiShim.GetInstanceFieldValue(
+                    manager,
+                    "dialogueSessions",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) as IList;
                 if (sessions == null || sessions.Count == 0) return null;
 
                 var sb = new StringBuilder();
@@ -144,7 +147,7 @@ namespace RimMind.Bridge.RimChat.Bridge
                 "rimchat_rpg_history", ContextLayer.L4_History, 0.5f,
                 async (ctx, ct) =>
                 {
-                    if (ctx.PawnId <= 0 || !RimChatDetector.IsRimChatActive || _rpgDisabled) return null;
+                    if (ctx.PawnId <= 0 || _rpgDisabled) return null;
                     return await RimMindAPI.MainThreadSnapshot.GetAsync<string?>(() =>
                     {
                         var pawn = TryFindPawnById(ctx.PawnId);

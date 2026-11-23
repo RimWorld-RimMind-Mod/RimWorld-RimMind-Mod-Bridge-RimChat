@@ -146,8 +146,8 @@ namespace RimMind.Bridge.RimChat.Settings
                         "Incident cooldown: {0} game days",
                         $"{s.incidentCooldownTicks / 60000f:F1}");
                     listing.LabelWithTooltip("  " + cooldownLabel, incidentTip);
-                    s.incidentCooldownTicks = (int)listing.SliderWithTooltip(s.incidentCooldownTicks, 6000f, 180000f, incidentTip);
-                    s.incidentCooldownTicks = (s.incidentCooldownTicks / 1500) * 1500;
+                    float rawCooldown = listing.SliderWithTooltip(s.incidentCooldownTicks, 6000f, 180000f, incidentTip);
+                    s.incidentCooldownTicks = Mathf.RoundToInt(rawCooldown / 1500f) * 1500;
                 }
                 listing.CheckboxLabeled(
                     RimMindAPI.Text.TrOr("RimMind.BridgeRimChat.Settings.ForceRimMindActions", "Force RimMind to execute all actions"),

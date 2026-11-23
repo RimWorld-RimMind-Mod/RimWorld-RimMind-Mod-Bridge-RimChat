@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text;
 using LudeonTK;
@@ -48,13 +49,14 @@ namespace RimMind.Bridge.RimChat.Debug
             actionType = DebugActionType.Action)]
         public static void TestDialogueGate()
         {
-            var pawn = Find.Selector.SingleSelectedThing as Pawn;
+            var pawn = Find.Selector?.SingleSelectedThing as Pawn;
             if (pawn == null)
             {
                 RimMindErrors.Warn("[RimMind-Bridge-RimChat] Please select a pawn on the map first.");
                 return;
             }
-            var sb = new StringBuilder($"[RimMind-Bridge-RimChat] Dialogue Gate Test ({pawn.Name.ToStringShort}):\n");
+            string pawnName = pawn.Name?.ToStringShort ?? pawn.LabelShort ?? "?";
+            var sb = new StringBuilder($"[RimMind-Bridge-RimChat] Dialogue Gate Test ({pawnName}):\n");
             sb.AppendLine($"  ShouldSkipDialogue(\"Chitchat\"): {RimMindAPI.Ext.ShouldSkipDialogue(pawn, "Chitchat")}");
             sb.AppendLine($"  ShouldSkipDialogue(\"Auto\"): {RimMindAPI.Ext.ShouldSkipDialogue(pawn, "Auto")}");
             sb.AppendLine($"  ShouldSkipDialogue(\"PlayerInput\"): {RimMindAPI.Ext.ShouldSkipDialogue(pawn, "PlayerInput")}");
@@ -80,17 +82,20 @@ namespace RimMind.Bridge.RimChat.Debug
         public static void ShowContextPullState()
         {
             var settings = BridgeRimChatSettings.Get();
-            var categories = RimMindAPI.Providers.GetRegisteredCategories();
-            var rimchatCategories = categories.Where(c => c.StartsWith("rimchat_")).ToList();
+            var contextKeys = RimMindAPI.Context.ContextKeys.GetAll();
+            var rimchatKeys = contextKeys
+                .Where(k => k.Key.StartsWith("rimchat_", StringComparison.Ordinal))
+                .ToList();
             var sb = new StringBuilder("[RimMind-Bridge-RimChat] Context Pull State:\n");
-            sb.AppendLine($"  Registered rimchat categories ({rimchatCategories.Count}):");
-            if (rimchatCategories.Count == 0)
+            sb.AppendLine($"  Registered rimchat context keys ({rimchatKeys.Count}):");
+            if (rimchatKeys.Count == 0)
                 sb.AppendLine("    (none)");
             else
-                foreach (var cat in rimchatCategories)
-                    sb.AppendLine($"    {cat}");
+                foreach (var meta in rimchatKeys)
+                    sb.AppendLine($"    {meta.Key} (owner={meta.OwnerMod})");
             sb.AppendLine();
             sb.AppendLine("  Settings:");
+            sb.AppendLine($"    enableContextPull: {settings.enableContextPull}");
             sb.AppendLine($"    pullDiplomacyHistory: {settings.pullDiplomacyHistory}");
             sb.AppendLine($"    pullRpgHistory: {settings.pullRpgHistory}");
             Log.Message(sb.ToString());

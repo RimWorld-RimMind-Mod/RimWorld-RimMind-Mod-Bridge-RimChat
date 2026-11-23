@@ -5,7 +5,6 @@ using RimMind.Bridge.RimChat.Cooldown;
 using RimMind.Bridge.RimChat.Detection;
 using RimMind.Bridge.RimChat.Settings;
 using RimMind.Presentation.Api;
-using RimWorld;
 using Verse;
 
 namespace RimMind.Bridge.RimChat.Debug

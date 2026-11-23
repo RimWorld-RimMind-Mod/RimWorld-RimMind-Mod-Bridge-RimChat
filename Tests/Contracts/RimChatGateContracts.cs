@@ -134,10 +134,10 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     settings.skipSocialActions = true;
                     settings.skipDiplomacyActions = false;
                     settings.skipRecruitAgree = false;
-                    Assert.True(ActionGate.IsRomanceAction("romance_attempt"));
-                    Assert.True(ActionGate.IsRomanceAction("pawn.interaction.romance_attempt"));
-                    Assert.True(ActionGate.IsRomanceAction("pawn.interaction.romance_breakup"));
-                    Assert.True(ActionGate.IsRomanceAction("custom_romance_tag"));
+                    Assert.True(ActionGate.IsSocialAction("romance_attempt"));
+                    Assert.True(ActionGate.IsSocialAction("pawn.interaction.romance_attempt"));
+                    Assert.True(ActionGate.IsSocialAction("pawn.interaction.romance_breakup"));
+                    Assert.True(ActionGate.IsSocialAction("custom_romance_tag"));
                     Assert.True(ActionGate.ShouldSkipAction("pawn.interaction"));
                     Assert.True(ActionGate.ShouldSkipAction("pawn.interaction.social_relax"));
                     Assert.True(ActionGate.ShouldSkipAction("pawn.interaction.give_item"));
@@ -234,8 +234,8 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
                     Assert.True(ActionGate.IsRecruitAction("custom_convert_guest"));
                     Assert.False(ActionGate.IsSocialAction("custom_convert_guest"));
 
-                    Assert.True(ActionGate.IsRomanceAction("custom_flirt_gesture"));
                     Assert.True(ActionGate.IsSocialAction("custom_flirt_gesture"));
+                    Assert.False(ActionGate.IsRecruitAction("custom_flirt_gesture"));
 
                     Assert.False(ActionGate.ShouldSkipAction("world.faction.query"));
                     Assert.False(ActionGate.ShouldSkipAction("pawn.relations.query"));
@@ -377,6 +377,17 @@ namespace RimMind.Bridge.RimChat.Tests.Contracts
 
             SharedIncidentCooldown.RecordIncident();
             Assert.True(SharedIncidentCooldown.IsOnCooldown(60000));
+            var previousTickManager = Verse.Find.TickManager;
+            try
+            {
+                Verse.Find.TickManager = null!;
+                SharedIncidentCooldown.RecordIncident();
+                Assert.False(SharedIncidentCooldown.IsOnCooldown(60000));
+            }
+            finally
+            {
+                Verse.Find.TickManager = previousTickManager;
+            }
             Verse.Current.Game = null;
             Assert.False(SharedIncidentCooldown.IsOnCooldown(60000));
         }

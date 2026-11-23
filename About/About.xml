@@ -32,8 +32,8 @@ RimMind is an enterprise-grade, AI-powered RimWorld mod suite. Integrated with L
 [tr][td]RimMind-Personality[/td][td]Big-Five psychological profiles, dawn monologues &amp; dynamic mood thoughts[/td][td]Core[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Personality]Link[/url][/td][/tr]
 [tr][td]RimMind-Storyteller[/td][td]AI Story Director, dramatic tension curve, chained arcs &amp; Storyteller Altar[/td][td]Core, Memory[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Storyteller]Link[/url][/td][/tr]
 [tr][td]RimMind-Extension-ModelService[/td][td]Multi-provider routing, Anthropic KV cache, local gateways &amp; load balancing[/td][td]Core[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Extension-ModelService]Link[/url][/td][/tr]
-[tr][td][b]RimMind-Bridge-RimChat[/b][/td][td]RimChat compatibility bridge: dialogue/action mutual exclusion &amp; context sync[/td][td]Core, RimChat[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Bridge-RimChat]Link[/url][/td][/tr]
-[tr][td]RimMind-Bridge-RimTalk[/td][td]RimTalk compatibility bridge: bubble harmonization &amp; bidirectional context[/td][td]Core, RimTalk[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Bridge-RimTalk]Link[/url][/td][/tr]
+[tr][td][b]RimMind-Bridge-RimChat[/b][/td][td]RimChat compatibility bridge: dialogue/action mutual exclusion &amp; history pull[/td][td]Core, RimChat[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Bridge-RimChat]Link[/url][/td][/tr]
+[tr][td]RimMind-Bridge-RimTalk[/td][td]RimTalk compatibility bridge: dialogue gating &amp; bidirectional context[/td][td]Core, RimTalk[/td][td][url=https://github.com/RimWorld-RimMind-Mod/RimWorld-RimMind-Mod-Bridge-RimTalk]Link[/url][/td][/tr]
 [/table]
 [code]Core ──┬── Actions ── Advisor
        ├── Dialogue
@@ -45,19 +45,19 @@ RimMind is an enterprise-grade, AI-powered RimWorld mod suite. Integrated with L
 
 [h2]Core Features[/h2]
 [list]
-[*][b]Dialogue Gating[/b] - Automatically suppresses duplicate RimMind player chat triggers and floating chat menus when RimChat is active, preventing overlapping conversation windows.
+[*][b]Dialogue Gating[/b] - Automatically suppresses overlapping RimMind chitchat, auto, and player dialogue triggers (plus the floating chat menu) when RimChat is active, preventing duplicate conversation windows.
 [*][b]Action &amp; Incident Gating[/b] - Coordinates diplomacy actions ([code]adjust_faction[/code], [code]trigger_incident[/code]), social romance/recruitment actions, and storyteller events with a shared global cooldown (default 1 in-game day).
-[*][b]Diplomatic &amp; RPG Context Synchronization[/b] - Imports faction diplomacy logs and RPG dialogue history from RimChat into [code]RimMind-Core[/code]'s context provider registry so RimMind AI agents stay aware of your diplomatic negotiations.
+[*][b]Diplomatic &amp; RPG Context Pull (RimChat to RimMind)[/b] - Pulls recent faction diplomacy logs and RPG dialogue history from RimChat into [code]RimMind-Core[/code]'s context registry ([code]rimchat_diplomacy[/code], [code]rimchat_rpg_history[/code]) so RimMind AI agents stay aware of your diplomatic negotiations.
 [/list]
 
 [h2]Default Gating Matrix[/h2]
 [table]
 [tr][th]Category[/th][th]Scope[/th][th]Default Behavior[/th][/tr]
-[tr][td]Player Dialogue[/td][td]RimMind-Dialogue manual chat &amp; float menu[/td][td]Gated (Deferred to RimChat)[/td][/tr]
+[tr][td]Dialogue Triggers[/td][td]RimMind-Dialogue chitchat, auto, player chat &amp; float menu[/td][td]Gated (Deferred to RimChat)[/td][/tr]
 [tr][td]Diplomacy Actions[/td][td]adjust_faction, trigger_incident[/td][td]Gated (Deferred to RimChat)[/td][/tr]
 [tr][td]Storyteller Incidents[/td][td]Overlapping random event triggers[/td][td]Gated with Shared Cooldown (60,000 ticks)[/td][/tr]
-[tr][td]Social &amp; Recruitment[/td][td]romance_accept, romance_breakup, recruit_agree[/td][td]Active (Configurable in Mod Settings)[/td][/tr]
-[tr][td]Context Sync[/td][td]RimChat diplomacy &amp; RPG chat logs[/td][td]Imported into RimMind Context[/td][/tr]
+[tr][td]Social &amp; Recruitment[/td][td]romance_attempt, romance_breakup, recruit_agree[/td][td]Active (Configurable in Mod Settings)[/td][/tr]
+[tr][td]Context Pull[/td][td]RimChat diplomacy &amp; RPG chat logs[/td][td]Diplomacy pulled by default; RPG optional[/td][/tr]
 [/table]
 
 [h2]Frequently Asked Questions[/h2]
@@ -65,7 +65,7 @@ RimMind is an enterprise-grade, AI-powered RimWorld mod suite. Integrated with L
 A: The bridge detects RimChat's absence at startup and remains completely inert with zero performance overhead.
 
 [b]Q: Can I customize which features RimMind keeps vs. defers to RimChat?[/b]
-A: Yes. All 13 gating and context synchronization switches can be toggled individually in Mod Settings.</description>
+A: Yes. All 14 gating and context-pull toggles plus the shared incident cooldown slider can be configured individually in Mod Settings.</description>
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>
